@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>beinet-deployment</artifactId>
+        <groupId>cn.beinet</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>beinet-dp-admin</artifactId>
+
+    <dependencies>
+        <!--
+        第一个必须是lombok，否则报错：
+        No property named "lastLoginDate" exists in source parameter(s). Type "UsersDto" has no properties.
+         -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.aliyun.oss</groupId>
+            <artifactId>aliyun-sdk-oss</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>cn.beinet</groupId>
+            <artifactId>beinet-base</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>cn.beinet</groupId>
+            <artifactId>beinet-dao</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>cn.beinet</groupId>
+            <artifactId>beinet-redis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>cn.beinet</groupId>
+            <artifactId>beinet-web</artifactId>
+        </dependency>
+    </dependencies>
+
+</project>
