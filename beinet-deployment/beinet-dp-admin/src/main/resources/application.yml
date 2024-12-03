@@ -9,7 +9,10 @@ spring:
     config:
       profile: ${spring.profiles.active}
       label: test
-
+  servlet:
+    multipart:
+      max-file-size: 10GB     # 单个文件最大限制
+      max-request-size: 10GB  # 整个请求体最大限制
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://10.100.72.155:8306/eb-dev?serverTimezone=UTC&allowMultiQueries=true&useUnicode=true&characterEncoding=utf8&socketTimeout=3000&connectTimeout=3000&useSSL=false&rewriteBatchedStatements=true&allowPublicKeyRetrieval=true&zeroDateTimeBehavior=round
@@ -32,3 +35,10 @@ sdk:
 jasypt:
   encryptor:
     password: .beinet.cn.
+
+# 文件管理器允许访问的根目录列表
+file-manager:
+  enabled: true
+  dir:
+    - d:/mp3
+    - D:/initSofts/normal/

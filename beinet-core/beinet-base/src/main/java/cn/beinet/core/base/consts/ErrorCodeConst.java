@@ -11,6 +11,8 @@ public class ErrorCodeConst {
     public final static int AUTH_START = 10000;
     //用户模块的错误码前缀
     public final static int USER_START = 11000;
+    //存储模块的错误码前缀
+    public final static int STORE_START = 12000;
     //系统模块的错误码前缀
     public final static int SYSTEM_START = 19000;
     //全局错误码前缀
