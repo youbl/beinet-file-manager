@@ -116,6 +116,7 @@
                 <div>
                     <a v-if="!scope.row.dir" href="#0" @click="openFile(scope.row.name)">下载</a>
                     <a v-if="isMusic(scope.row.name)" href="#0" @click="openMusic(scope.row.name)">播放音乐</a>
+                    <a v-if="isVideo(scope.row.name)" href="#0" @click="openVideo(scope.row.name)">播放视频</a>
                     <a style="display: none" v-if="!scope.row.dir" href="#0" @click="showDelete(scope.row)">删除</a>
                 </div>
             </template>
@@ -149,6 +150,16 @@
             <el-button size="mini" @click="deleteDialog=false">取 消</el-button>
         </div>
     </el-dialog>
+
+    <!-- 显示播放的视频 -->
+    <el-dialog :visible.sync="openVideoDialog" width="80%" :fullscreen="true">
+        <div style="display: flex; justify-content: center; align-items: center;">
+            <video v-if="videoUrl" controls :src="videoUrl" ref="videoPlayer" style="max-width: 100%; max-height: 80vh;" preload="metadata"></video>
+        </div>
+        <div class="dialog-footer" slot="footer">
+            <el-button size="mini" @click="closeVideoDialog">关闭</el-button>
+        </div>
+    </el-dialog>
 </div>
 <script type="text/javascript">
     const vueApp = new Vue({
@@ -179,6 +190,9 @@
                 deleteKey: '',
 
                 fileList: [],
+
+                openVideoDialog: false, // 新增视频对话框状态
+                videoUrl: '', // 新增视频URL
             }
         },
         mounted: function () {
@@ -308,6 +322,29 @@
                 window.ajaxError(error);
             },
 
+            isVideo: function (name) {
+                const videoExtensions = ['.mp4', '.avi', '.mov', '.wmv', '.mkv']; // 视频文件扩展名
+                return videoExtensions.some(ext => name.toLowerCase().endsWith(ext));
+            },
+            openVideo: function (name) {
+                const fullPath = this.searchCond.prefix + name;
+                this.videoUrl = $$BASE_URL + 'stores/download?file=' + encodeURIComponent(fullPath);
+                this.openVideoDialog = true; // 打开视频弹窗
+                this.$nextTick(() => {
+                    if (this.$refs.videoPlayer) {
+                        this.$refs.videoPlayer.src = this.videoUrl; // 确保只设置一次
+                        this.$refs.videoPlayer.play().catch(error => {
+                            console.error('播放视频失败:', error);
+                        });
+                    }
+                });
+            },
+            closeVideoDialog: function () {
+                if (this.$refs.videoPlayer) {
+                    this.$refs.videoPlayer.pause(); // 停止播放
+                }
+                this.openVideoDialog = false; // 关闭弹窗
+            },
         },
     });
 </script>
