@@ -82,16 +82,21 @@
             <template slot-scope="scope">
                 <div>
                     <a v-if="!scope.row.dir" href="#0" @click="openFile(scope.row.name)">下载</a>
+                    <a v-if="isMusic(scope.row.name)" href="#0" @click="openMusic(scope.row.name)">播放音乐</a>
                     <a style="display: none" v-if="!scope.row.dir" href="#0" @click="showDelete(scope.row)">删除</a>
                 </div>
             </template>
         </el-table-column>
     </el-table>
 
-    <!-- 显示json字符串 -->
+    <!-- 显示播放的音乐 -->
     <el-dialog :visible.sync="openDetailDialog" width="60%">
-        <el-input id="detailJsonInput" type="textarea" :autosize="{ minRows: 6}"
-                  v-model="detailJson"></el-input>
+        <div>
+            <audio v-if="musicUrl" :src="musicUrl" controls autoplay></audio>
+        </div>
+        <div class="dialog-footer" slot="footer">
+            <el-button size="mini" @click="closeMusicDialog">关闭</el-button>
+        </div>
     </el-dialog>
 
     <!-- 删除确认框 -->
@@ -134,7 +139,8 @@
                 dataList: [],
 
                 openDetailDialog: false, // 显示详情对话框
-                detailJson: '',
+                musicUrl: '',
+                musicPlayer: null,
 
                 deleteDialog: false,
                 deleteKey: '',
@@ -164,6 +170,31 @@
                 const fullPath = this.searchCond.prefix + key;
                 let url = $$BASE_URL + 'stores/download?file=' + encodeURIComponent(fullPath);
                 window.open(url);
+            },
+            isMusic: function (name) {
+                const musicExtensions = ['.mp3', '.wav', '.ogg', '.flac', '.aac']; // 音乐文件扩展名
+                return musicExtensions.some(ext => name.toLowerCase().endsWith(ext));
+            },
+            openMusic: function (name) {
+                const fullPath = this.searchCond.prefix + name;
+                this.musicUrl = $$BASE_URL + 'stores/download?file=' + encodeURIComponent(fullPath);
+                this.openDetailDialog = true; // 打开弹窗
+                this.$nextTick(() => {
+                    if (this.musicPlayer) {
+                        return;
+                    }
+                    this.musicPlayer = new Audio(this.musicUrl);
+                    // this.musicPlayer.play().catch(error => {
+                    //     console.error('播放音乐失败:', error);
+                    // });
+                });
+            },
+            closeMusicDialog: function () {
+                if (this.musicPlayer) {
+                    this.musicPlayer.pause(); // 停止播放
+                    this.musicPlayer = null; // 清空播放器实例
+                }
+                this.openDetailDialog = false; // 关闭弹窗
             },
             loadDatas: function (form) {
                 this.$refs[form].validate(valid => {
@@ -204,17 +235,6 @@
                     this.statusTxt = this.dataList.length + '行，耗时:' + costTime + 'ms';
                 }).catch(error => this.ajaxError(error));
             },
-            showJson: function (path) {
-                let url = $$BASE_URL + 'testUrl?url=' + encodeURIComponent(path);
-                return axios.get(url).then(response => {
-                    this.detailJson = (JSON.stringify(response.data, null, 4)
-                        .replace(/\[\s+/g, '[')
-                        .replace(/\s+\]/g, ']'));
-                    this.openDetailDialog = true;
-                }).catch(error => {
-                    this.ajaxError(error);
-                });
-            },
             showDelete: function (row) {
                 this.deleteDialog = true;
                 this.deleteKey = row.key;
@@ -243,7 +263,7 @@
             handleUploadSuccess: function (response, file, fileList) {
                 fileList.length = 0;// 清空文件列表显示
                 if (response.data === null || typeof (response.data) !== 'string') {
-                    return alert(this.getMsg(response));
+                    return alert(getErrorMsg(response));
                 }
                 return this.loadDatasDo();
             },
@@ -255,19 +275,6 @@
                 window.ajaxError(error);
             },
 
-            getMsg: function (response) {
-                if (!response)
-                    return '';
-                if (response.msg)
-                    return response.msg;
-                if (!response.data)
-                    return '';
-                console.log(JSON.stringify(response.data));
-                let msg = response.data['error'];
-                if (!msg)
-                    msg = response.data['msg'];
-                return msg ? msg : '';
-            },
         },
     });
 </script>
