@@ -117,6 +117,7 @@
                     <a v-if="!scope.row.dir" href="#0" @click="openFile(scope.row.name)">下载</a>
                     <a v-if="isMusic(scope.row.name)" href="#0" @click="openMusic(scope.row.name)">播放音乐</a>
                     <a v-if="isVideo(scope.row.name)" href="#0" @click="openVideo(scope.row.name)">播放视频</a>
+                    <a v-if="isImage(scope.row.name)" href="#0" @click="openImage(scope.row.name)">查看图片</a>
                     <a style="display: none" v-if="!scope.row.dir" href="#0" @click="showDelete(scope.row)">删除</a>
                 </div>
             </template>
@@ -160,6 +161,24 @@
             <el-button size="mini" @click="closeVideoDialog">关闭</el-button>
         </div>
     </el-dialog>
+
+    <!-- 显示图片 -->
+    <el-dialog :visible.sync="openImageDialog" width="80%">
+        <div style="display: flex; flex-direction: column; align-items: center;">
+            <div style="margin-bottom: 10px; font-weight: bold;">{{ currentImagePath }}</div>
+            <div>
+                <el-button size="mini" @click="prevImage" :disabled="currentIndex === 0">上一张</el-button>
+                <el-button size="mini" @click="nextImage" :disabled="currentIndex === imageList.length - 1">下一张</el-button>
+                <el-button size="mini" @click="closeImageDialog">关闭</el-button>
+            </div>
+            <img v-if="currentImageUrl" :src="currentImageUrl" style="max-width: 100%; max-height: 80vh; object-fit: contain;" />
+        </div>
+        <div class="dialog-footer" slot="footer">
+            <el-button size="mini" @click="prevImage" :disabled="currentIndex === 0">上一张</el-button>
+            <el-button size="mini" @click="nextImage" :disabled="currentIndex === imageList.length - 1">下一张</el-button>
+            <el-button size="mini" @click="closeImageDialog">关闭</el-button>
+        </div>
+    </el-dialog>
 </div>
 <script type="text/javascript">
     const vueApp = new Vue({
@@ -193,6 +212,12 @@
 
                 openVideoDialog: false, // 新增视频对话框状态
                 videoUrl: '', // 新增视频URL
+
+                openImageDialog: false, // 新增图片对话框状态
+                currentImageUrl: '', // 当前显示的图片URL
+                currentImagePath: '', // 当前显示的图片路径
+                imageList: [], // 图片列表
+                currentIndex: 0, // 当前图片索引
             }
         },
         mounted: function () {
@@ -279,6 +304,13 @@
                         });
                     }
                     this.dataList = pageData;
+
+                    // 更新 imageList
+                    this.imageList = pageData.filter(item => this.isImage(item.name)).map(item => ({
+                        name: item.name,
+                        url: $$BASE_URL + 'stores/download?file=' + encodeURIComponent(this.searchCond.prefix + item.name)
+                    }));
+
                     this.statusTxt = this.dataList.length + '行，耗时:' + costTime + 'ms';
                 }).catch(error => this.ajaxError(error));
             },
@@ -344,6 +376,32 @@
                     this.$refs.videoPlayer.pause(); // 停止播放
                 }
                 this.openVideoDialog = false; // 关闭弹窗
+            },
+            isImage: function (name) {
+                const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp']; // 图片文件扩展名
+                return imageExtensions.some(ext => name.toLowerCase().endsWith(ext));
+            },
+            openImage: function (name) {
+                const fullPath = this.searchCond.prefix + name;
+                this.currentImageUrl = $$BASE_URL + 'stores/download?file=' + encodeURIComponent(fullPath);
+                this.currentImagePath = fullPath; // 设置当前图片路径
+                this.openImageDialog = true; // 打开图片弹窗
+                this.currentIndex = this.imageList.findIndex(img => img.name === name); // 设置当前索引
+            },
+            closeImageDialog: function () {
+                this.openImageDialog = false; // 关闭弹窗
+            },
+            prevImage: function () {
+                if (this.currentIndex > 0) {
+                    this.currentIndex--;
+                    this.currentImageUrl = this.imageList[this.currentIndex].url; // 更新当前图片URL
+                }
+            },
+            nextImage: function () {
+                if (this.currentIndex < this.imageList.length - 1) {
+                    this.currentIndex++;
+                    this.currentImageUrl = this.imageList[this.currentIndex].url; // 更新当前图片URL
+                }
             },
         },
     });
