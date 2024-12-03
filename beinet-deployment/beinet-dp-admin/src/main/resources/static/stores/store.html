@@ -92,7 +92,7 @@
     <!-- 显示播放的音乐 -->
     <el-dialog :visible.sync="openDetailDialog" width="60%">
         <div>
-            <audio v-if="musicUrl" :src="musicUrl" controls autoplay></audio>
+            <audio v-if="musicUrl" controls :src="musicUrl" ref="musicPlayer" style="width: 90%"></audio>
         </div>
         <div class="dialog-footer" slot="footer">
             <el-button size="mini" @click="closeMusicDialog">关闭</el-button>
@@ -180,19 +180,19 @@
                 this.musicUrl = $$BASE_URL + 'stores/download?file=' + encodeURIComponent(fullPath);
                 this.openDetailDialog = true; // 打开弹窗
                 this.$nextTick(() => {
-                    if (this.musicPlayer) {
-                        return;
+                    if (this.$refs.musicPlayer) {
+                        //this.musicPlayer = new Audio(this.musicUrl);
+                        this.$refs.musicPlayer.src = this.musicUrl;
+                        this.$refs.musicPlayer.play().catch(error => {
+                            console.error('播放音乐失败:', error);
+                        });
                     }
-                    this.musicPlayer = new Audio(this.musicUrl);
-                    // this.musicPlayer.play().catch(error => {
-                    //     console.error('播放音乐失败:', error);
-                    // });
                 });
             },
             closeMusicDialog: function () {
-                if (this.musicPlayer) {
-                    this.musicPlayer.pause(); // 停止播放
-                    this.musicPlayer = null; // 清空播放器实例
+                if (this.$refs.musicPlayer) {
+                    this.$refs.musicPlayer.pause(); // 停止播放
+                    //this.$refs.musicPlayer = null; // 清空播放器实例
                 }
                 this.openDetailDialog = false; // 关闭弹窗
             },
