@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+    <title>users列表</title>
+    <script src="../res/common.js?flg=1" type="text/javascript"></script>
+    <script src="../res/vue.min.js" type="text/javascript"></script>
+    <script src="../res/axios.min.js" type="text/javascript"></script>
+    <script src="../res/elemeIndex.js" type="text/javascript"></script>
+    <link href="../res/elemeIndex.css" rel="stylesheet">
+
+    <script src="../res/base64.min.js" type="text/javascript"></script>
+    <script src="../res/md5-min.js" type="text/javascript"></script>
+    <script src="../res/sha256.min.js" type="text/javascript"></script>
+</head>
+<body style="overflow: hidden;margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f7f9fc;">
+<!-- 禁用浏览器的纵向滚动条 -->
+<div id="divApp"
+     style="text-align: center;width: 98%; height: 100vh; overflow: hidden; padding: 10px; box-sizing: border-box;">
+    <!-- 设置容器高度 -->
+    <el-form :inline="true" class="demo-form-inline"
+             style="text-align: left;margin-bottom: 5px;padding-left: 5px;width: 100%; background-color: #ffffff;border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+        <el-form-item label="源串" prop="str">
+            <el-input placeholder="请输入字符串" v-model.trim="originStr" type="textarea" :rows="2"
+                      :cols="180"></el-input>
+        </el-form-item>
+        <br>
+        <el-form-item>
+            <el-button @click="ymlEncrypt" type="primary" size="small">yml数据加密</el-button>
+            <el-button @click="ymlDecrypt" type="primary" size="small">yml数据解密</el-button>
+
+            <el-button @click="base64Encode" type="primary" size="small">Base64加密</el-button>
+            <el-button @click="base64Decode" type="primary" size="small">Base64解密</el-button>
+
+            <el-button @click="jwtDecode" type="primary" size="small">JWT解密</el-button>
+            <el-button @click="md5count" type="primary" size="small">MD5</el-button>
+            <el-button @click="sha256Count" type="primary" size="small">SHA256</el-button>
+
+            <el-button @click="resultStr=encodeURIComponent(originStr)" type="primary" size="small">encodeURIComponent
+            </el-button>
+            <el-button @click="resultStr=decodeURIComponent(originStr)" type="primary" size="small">decodeURIComponent
+            </el-button>
+
+            <el-button @click="time2timestamp" type="primary" size="small">时间转时间戳</el-button>
+            <el-button @click="timestamp2time" type="primary" size="small">时间戳转时间</el-button>
+
+            <el-button @click="location.reload()" size="small">刷新页面</el-button>
+        </el-form-item>
+        <br>
+        <el-form-item label="结果" prop="str">
+            <el-input placeholder="" v-model="resultStr" type="textarea" :rows="2" :cols="180"></el-input>
+        </el-form-item>
+    </el-form>
+</div>
+<script type="text/javascript">
+    const vueApp = new Vue({
+        el: '#divApp',
+        data: function () {
+            return {
+                statusTxt: '',
+                loading: false,
+
+                originStr: '',
+                resultStr: '',
+            }
+        },
+        mounted: function () {
+            this.originStr = getQueryString('str');
+            if (!this.originStr) {
+                this.originStr = '123456';
+            }
+        },
+        computed: {},
+        methods: {
+            ymlEncrypt: function () {
+                let url = $$BASE_URL + 'tools/ymlencrypt?str=' + encodeURIComponent(this.originStr);
+                return axios.get(url).then(response => {
+                    this.resultStr = response.data.data;
+                }).catch(error => this.ajaxError(error));
+            },
+            ymlDecrypt: function () {
+                let url = $$BASE_URL + 'tools/ymldecrypt?str=' + encodeURIComponent(this.originStr);
+                return axios.get(url).then(response => {
+                    this.resultStr = response.data.data;
+                }).catch(error => this.ajaxError(error));
+            },
+
+            base64Encode: function () {
+                try {
+                    this.resultStr = Base64.encode(this.originStr);
+                } catch (exp) {
+                    this.resultStr = '错误: ' + exp;
+                }
+            },
+            base64Decode: function () {
+                try {
+                    this.resultStr = Base64.decode(this.originStr);
+                } catch (exp) {
+                    this.resultStr = '错误: ' + exp;
+                }
+            },
+
+            jwtDecode: function () {
+                let ret = '';
+                let arr = this.originStr.split('.');
+                for (let i = 0; i < arr.length; i++) {
+                    try {
+                        if (ret.length > 0)
+                            ret += '.';
+                        ret += Base64.decode(arr[i]);
+                    } catch (exp) {
+                        ret += '错误: ' + exp.toString();
+                    }
+                }
+                this.resultStr = ret;
+            },
+            md5count: function () {
+                try {
+                    this.resultStr = hex_md5(this.originStr);
+                    this.md5ByServer(this.originStr);
+                } catch (exp) {
+                    this.resultStr = '错误: ' + exp;
+                }
+            },
+            md5ByServer: function (str) {
+                let url = $$BASE_URL + 'tools/md5?str=' + encodeURIComponent(str);
+                return axios.get(url).then(response => {
+                    if (this.resultStr === response.data.data) {
+                        this.resultStr += '    ***与服务端计算结果相同***';
+                    } else {
+                        this.resultStr += '    ***有问题，与服务端计算结果不相同***';
+                    }
+                    this.resultStr += '\n服务端结果：' + response.data.data;
+                }).catch(error => this.ajaxError(error));
+            },
+            sha256Count: function () {
+                try {
+                    this.resultStr = sha256(this.originStr);
+                    this.sha256ByServer(this.originStr);
+                } catch (exp) {
+                    this.resultStr = '错误: ' + exp;
+                }
+            },
+            sha256ByServer: function (str) {
+                let url = $$BASE_URL + 'tools/sha256?str=' + encodeURIComponent(str);
+                return axios.get(url).then(response => {
+                    if (this.resultStr === response.data.data) {
+                        this.resultStr += '    ***与服务端计算结果相同***';
+                    } else {
+                        this.resultStr += '    ***有问题，与服务端计算结果不相同***';
+                    }
+                    this.resultStr += '\n服务端结果：' + response.data.data;
+                }).catch(error => this.ajaxError(error));
+            },
+
+            time2timestamp: function () {
+                if (!this.originStr)
+                    this.originStr = getStrTime();
+                this.resultStr = getTimestamp(this.originStr); // common.js里的方法
+            },
+            timestamp2time: function () {
+                this.resultStr = getStrTimeFromTimestamp(this.originStr);
+            },
+
+            ajaxError: function (error) {
+                window.ajaxError(error, vueApp);
+            },
+        },
+    });
+</script>
+</body>
+</html>

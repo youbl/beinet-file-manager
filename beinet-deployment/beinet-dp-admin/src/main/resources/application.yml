@@ -12,19 +12,23 @@ spring:
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://10.100.72.155:3306/dev?allowMultiQueries=true&useUnicode=true&characterEncoding=utf8&socketTimeout=600000&connectTimeout=15000&rewriteBatchedStatements=true&useSSL=false&zeroDateTimeBehavior=round&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://10.100.72.155:8306/eb-dev?serverTimezone=UTC&allowMultiQueries=true&useUnicode=true&characterEncoding=utf8&socketTimeout=3000&connectTimeout=3000&useSSL=false&rewriteBatchedStatements=true&allowPublicKeyRetrieval=true&zeroDateTimeBehavior=round
     username: root
-    password: 123456
+    password: ENC(eP7nQwcd/E2fjjk8oOG3hyH+4En0uAdF+o1FeDtPe/8BgEK/JfDevg6mgMn6MfWc)
   data:
     redis:
       host: 10.100.72.155
       port: 8379
-      password: beinet123456
+      password: ENC(eP7nQwcd/E2fjjk8oOG3hyH+4En0uAdF+o1FeDtPe/8BgEK/JfDevg6mgMn6MfWc)
       database: 15            # 数据库索引，注意 0到15
 
 sdk:
   app-key: sdk
-  secure-key: cnbeinet.secure
+  secure-key: ENC(W23usMdaRPEyrbl9IdTAE+t3VuILRJBc1ZeHXKrKjr4dOg1OkdBhVVPaUFaQnpIe)
   # todo: ak/sk可以访问的api列表
   api:
     - /version
+
+jasypt:
+  encryptor:
+    password: .beinet.cn.
