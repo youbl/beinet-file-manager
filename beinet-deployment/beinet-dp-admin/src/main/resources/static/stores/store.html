@@ -64,7 +64,6 @@
             <el-button @click="loadDatas('searchForm')" icon="el-icon-search" type="primary" size="mini">查询
             </el-button>
             <el-button @click="location.reload()" size="mini">刷新</el-button>
-            <span style="color:blue">{{statusTxt}}</span>
         </div>
         <div style="float: left; padding-left: 10px;">
             <el-upload
@@ -76,11 +75,20 @@
                     :on-exceed="handleUploadExceed"
                     :on-success="handleUploadSuccess"
                     :auto-upload="true"
-                    :multiple="false"
+                    :multiple="true"
                     :limit="100000"
                     :file-list="fileList">
                 <el-button size="small" type="primary">选择文件上传</el-button>
             </el-upload>
+        </div>
+        <div style="float: left; padding-left: 10px;">
+            <span style="color: blue;font-size:12px">
+                <span>{{statusTxt}}</span>
+                【
+                <span>{{dirCount}}目录 {{fileCount}}文件</span>
+                <span v-if="totalSize">/{{byteToStr(totalSize)}}</span>
+                】
+            </span>
         </div>
         <div style="clear: both"></div>
     </el-form>
@@ -237,6 +245,9 @@
                 currentImagePath: '', // 当前显示的图片路径
                 imageList: [], // 图片列表
                 currentIndex: 0, // 当前图片索引
+                dirCount: 0, // 目录数量
+                fileCount: 0, // 文件数量
+                totalSize: 0, // 文件总大小
             }
         },
         mounted: function () {
@@ -326,6 +337,11 @@
                     }
                     this.dataList = pageData;
 
+                    // 计算目录数量、文件数量和总大小
+                    this.dirCount = pageData.filter(item => item.dir).length;
+                    this.fileCount = pageData.filter(item => !item.dir).length;
+                    this.totalSize = pageData.reduce((sum, item) => sum + (item.dir ? 0 : item.size), 0);
+
                     // 更新 imageList
                     this.imageList = pageData.filter(item => this.isImage(item.name)).map(item => ({
                         name: item.name,
@@ -365,7 +381,7 @@
                 if (response.data === null || typeof (response.data) !== 'string') {
                     return alert(getErrorMsg(response));
                 }
-                return this.loadDatasDo();
+                setTimeout(() => this.loadDatasDo(), 500);
             },
             beforeUploadRemove(file, fileList) {
                 return this.$confirm(`确定移除 ${file.name}？`);
