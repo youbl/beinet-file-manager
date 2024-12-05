@@ -4,6 +4,7 @@ import cn.beinet.core.utils.IpHelper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.constraints.NotNull;
 import lombok.SneakyThrows;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,13 +31,7 @@ public class HomeController {
     public String test(HttpServletRequest request) {
         var ret = IpHelper.getRequestHeader(request);
 
-        var ts1 = System.currentTimeMillis();
-        var now = LocalDateTime.now();
-        var ts3 = Timestamp.valueOf(now).getTime();
-
-        var zone = TimeZone.getDefault();
-        ret += "\r\n\r\n server time: " + now + "  timestamp: " + ts3 + " " + ts1 + " zone:" + zone.getID() + " " + zone.getRawOffset();
-        return (ret);
+        return getServerInfo(ret);
     }
 
     @PostMapping(value = "test", produces = {"text/plain"})
@@ -49,18 +44,26 @@ public class HomeController {
         var body = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
         ret += "\r\n\r\n  body: " + body;
 
-        var ts1 = System.currentTimeMillis();
-        var now = LocalDateTime.now();
-        var ts3 = Timestamp.valueOf(now).getTime();
-
-        var zone = TimeZone.getDefault();
-        ret += "\r\n\r\n server time: " + now + "  timestamp: " + ts3 + " " + ts1 + " zone:" + zone.getID() + " " + zone.getRawOffset();
-        return (ret);
+        return getServerInfo(ret);
     }
 
     @GetMapping("test/err")
     @Operation(summary = "测试异常响应")
     public String err() {
-        throw new IllegalArgumentException("test一下下err");
+        throw new IllegalArgumentException("test 一下下 err");
+    }
+
+    @NotNull
+    private String getServerInfo(String ret) {
+        var ts1 = System.currentTimeMillis();
+        var now = LocalDateTime.now();
+        var ts3 = Timestamp.valueOf(now).getTime();
+
+        var zone = TimeZone.getDefault();
+        ret += "\r\n\r\n server ip: " + IpHelper.getServerIp() +
+                "\r\n time: " + now +
+                "\r\n timestamp: " + ts3 + " " + ts1 +
+                "\n zone:" + zone.getID() + " " + zone.getRawOffset();
+        return (ret);
     }
 }
