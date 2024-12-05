@@ -17,29 +17,36 @@
             font-family: 'Arial', sans-serif; /* 字体样式 */
             color: #333; /* 字体颜色 */
         }
+
         #divApp {
             padding: 20px;
             border-radius: 8px;
             background-color: #ffffff; /* 白色背景 */
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* 阴影效果 */
         }
+
         .el-button {
             background-color: #4CAF50; /* 按钮背景色 */
             color: white; /* 按钮字体颜色 */
         }
+
         .el-button:hover {
             background-color: #45a049; /* 悬停效果 */
         }
+
         .el-table {
             border-radius: 8px;
             overflow: hidden; /* 边框圆角 */
         }
+
         .el-table th {
             background-color: #f2f2f2; /* 表头背景色 */
         }
+
         .el-table td {
             background-color: #ffffff; /* 单元格背景色 */
         }
+
         .el-table tr:hover {
             background-color: #f9f9f9; /* 行悬停效果 */
         }
@@ -155,7 +162,16 @@
     <!-- 显示播放的视频 -->
     <el-dialog :visible.sync="openVideoDialog" width="80%" :fullscreen="true">
         <div style="display: flex; justify-content: center; align-items: center;">
-            <video v-if="videoUrl" controls :src="videoUrl" ref="videoPlayer" style="max-width: 100%; max-height: 80vh;" preload="metadata"></video>
+            <video v-if="videoUrl"
+                   controls
+                   :src="videoUrl"
+                   ref="videoPlayer"
+                   style="max-width: 100%; max-height: 80vh;"
+                   preload="metadata"
+                   controlsList="nodownload"
+                   crossorigin="anonymous">
+                您的浏览器不支持 HTML5 视频播放
+            </video>
         </div>
         <div class="dialog-footer" slot="footer">
             <el-button size="mini" @click="closeVideoDialog">关闭</el-button>
@@ -168,14 +184,17 @@
             <div style="margin-bottom: 10px; font-weight: bold;">{{ currentImagePath }}</div>
             <div>
                 <el-button size="mini" @click="prevImage" :disabled="currentIndex === 0">上一张</el-button>
-                <el-button size="mini" @click="nextImage" :disabled="currentIndex === imageList.length - 1">下一张</el-button>
+                <el-button size="mini" @click="nextImage" :disabled="currentIndex === imageList.length - 1">下一张
+                </el-button>
                 <el-button size="mini" @click="closeImageDialog">关闭</el-button>
             </div>
-            <img v-if="currentImageUrl" :src="currentImageUrl" style="max-width: 100%; max-height: 80vh; object-fit: contain;" />
+            <img v-if="currentImageUrl" :src="currentImageUrl"
+                 style="max-width: 100%; max-height: 80vh; object-fit: contain;"/>
         </div>
         <div class="dialog-footer" slot="footer">
             <el-button size="mini" @click="prevImage" :disabled="currentIndex === 0">上一张</el-button>
-            <el-button size="mini" @click="nextImage" :disabled="currentIndex === imageList.length - 1">下一张</el-button>
+            <el-button size="mini" @click="nextImage" :disabled="currentIndex === imageList.length - 1">下一张
+            </el-button>
             <el-button size="mini" @click="closeImageDialog">关闭</el-button>
         </div>
     </el-dialog>
@@ -262,9 +281,11 @@
                 });
             },
             closeMusicDialog: function () {
-                if (this.$refs.musicPlayer) {
-                    this.$refs.musicPlayer.pause(); // 停止播放
-                    //this.$refs.musicPlayer = null; // 清空播放器实例
+                let player = this.$refs.musicPlayer;
+                if (player) {
+                    player.pause(); // 停止播放
+                    player.currentTime = 0;
+                    player.src = ''; // 清除音乐源
                 }
                 this.openDetailDialog = false; // 关闭弹窗
             },
@@ -361,21 +382,48 @@
             openVideo: function (name) {
                 const fullPath = this.searchCond.prefix + name;
                 this.videoUrl = $$BASE_URL + 'stores/download?file=' + encodeURIComponent(fullPath);
-                this.openVideoDialog = true; // 打开视频弹窗
+                this.openVideoDialog = true;
+
                 this.$nextTick(() => {
-                    if (this.$refs.videoPlayer) {
-                        this.$refs.videoPlayer.src = this.videoUrl; // 确保只设置一次
-                        this.$refs.videoPlayer.play().catch(error => {
-                            console.error('播放视频失败:', error);
-                        });
-                    }
+                    const player = this.$refs.videoPlayer;
+
+                    // 设置视频播放器属性
+                    player.preload = 'metadata'; // 只预加载元数据
+                    player.autoplay = true;     // 允许自动播放
+
+                    // 添加错误处理
+                    player.onerror = (e) => {
+                        console.error('视频加载失败:', e);
+                        this.$message.error('视频加载失败，请稍后重试');
+                    };
+
+                    // 添加加载进度处理
+                    player.onprogress = () => {
+                        if (player.buffered.length > 0) {
+                            const bufferedEnd = player.buffered.end(player.buffered.length - 1);
+                            const duration = player.duration;
+                            const progress = (bufferedEnd / duration) * 100;
+                            console.log(`加载进度: ${progress.toFixed(2)}%`);
+                        }
+                    };
+
+                    // 设置播放质量
+                    player.addEventListener('loadedmetadata', () => {
+                        // 如果视频分辨率过高，可以降低播放质量
+                        if (player.videoHeight > 720) {
+                            player.style.maxHeight = '720px';
+                        }
+                    });
                 });
             },
             closeVideoDialog: function () {
                 if (this.$refs.videoPlayer) {
-                    this.$refs.videoPlayer.pause(); // 停止播放
+                    const player = this.$refs.videoPlayer;
+                    player.pause();
+                    player.currentTime = 0;
+                    player.src = ''; // 清除视频源
                 }
-                this.openVideoDialog = false; // 关闭弹窗
+                this.openVideoDialog = false;
             },
             isImage: function (name) {
                 const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp']; // 图片文件扩展名
@@ -389,17 +437,20 @@
                 this.currentIndex = this.imageList.findIndex(img => img.name === name); // 设置当前索引
             },
             closeImageDialog: function () {
+                this.currentImageUrl = '';
                 this.openImageDialog = false; // 关闭弹窗
             },
             prevImage: function () {
                 if (this.currentIndex > 0) {
                     this.currentIndex--;
+                    this.currentImageUrl = '';
                     this.currentImageUrl = this.imageList[this.currentIndex].url; // 更新当前图片URL
                 }
             },
             nextImage: function () {
                 if (this.currentIndex < this.imageList.length - 1) {
                     this.currentIndex++;
+                    this.currentImageUrl = '';
                     this.currentImageUrl = this.imageList[this.currentIndex].url; // 更新当前图片URL
                 }
             },

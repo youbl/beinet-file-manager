@@ -10,6 +10,7 @@ public enum StoreErrorCode implements BaseErrorEnums {
     STORE_ERR_NO_PERMISSION("不允许访问的目录", 2),
     STORE_ERR_FILE_EXISTS("文件已存在", 3),
     STORE_ERR_FILE_NOT_EXISTS("文件不存在", 4),
+    STORE_ERR_RANGE_INVALID("Range请求头格式错误", 5),
     ;
     private final int errorCode;
     private final String errorMsg;

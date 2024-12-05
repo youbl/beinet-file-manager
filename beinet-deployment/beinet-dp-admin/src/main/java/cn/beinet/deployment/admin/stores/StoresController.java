@@ -4,6 +4,7 @@ import cn.beinet.core.base.commonDto.ResponseData;
 import cn.beinet.deployment.admin.stores.dtos.StoreInfo;
 import cn.beinet.deployment.admin.stores.services.StoreService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,7 +47,14 @@ public class StoresController {
     }
 
     @GetMapping("stores/download")
-    public void download(@RequestParam String file, HttpServletResponse response) {
-        storeService.download(file, response);
+    public void download(@RequestParam String file, HttpServletResponse response, HttpServletRequest request) {
+        String rangeHeader = request.getHeader("Range");
+        if (rangeHeader != null) {
+            // 存在Range头，说明是分片请求
+            storeService.downloadWithRange(file, response, rangeHeader);
+        } else {
+            // 普通下载
+            storeService.download(file, response);
+        }
     }
 }
