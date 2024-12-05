@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: beinet-redis
+  profiles:
+    active: local
+  data:
+    redis:
+      host: 10.100.72.155
+      port: 8379
+      password: beinet123456
+      database: 15            # 数据库索引，注意 0到15
