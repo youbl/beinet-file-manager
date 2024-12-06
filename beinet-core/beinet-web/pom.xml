@@ -39,5 +39,9 @@
             <groupId>cn.beinet</groupId>
             <artifactId>beinet-utils</artifactId>
         </dependency>
+        <dependency>
+            <groupId>cn.beinet</groupId>
+            <artifactId>beinet-base</artifactId>
+        </dependency>
     </dependencies>
 </project>

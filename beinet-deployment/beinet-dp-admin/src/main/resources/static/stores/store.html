@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- 添加视口元标签 -->
     <title>存储列表</title>
     <script src="../res/common.js?flg=3" type="text/javascript"></script>
     <script src="../res/vue.min.js" type="text/javascript"></script>
@@ -16,6 +17,8 @@
             background-color: #f5f5f5; /* 淡雅背景色 */
             font-family: 'Arial', sans-serif; /* 字体样式 */
             color: #333; /* 字体颜色 */
+            margin: 0; /* 去掉默认边距 */
+            padding: 0; /* 去掉默认内边距 */
         }
 
         #divApp {
@@ -23,11 +26,14 @@
             border-radius: 8px;
             background-color: #ffffff; /* 白色背景 */
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* 阴影效果 */
+            max-width: 100%; /* 最大宽度为100% */
+            box-sizing: border-box; /* 包含内边距和边框 */
         }
 
         .el-button {
             background-color: #4CAF50; /* 按钮背景色 */
             color: white; /* 按钮字体颜色 */
+            margin-right: 10px; /* 按钮右侧间距 */
         }
 
         .el-button:hover {
@@ -37,18 +43,35 @@
         .el-table {
             border-radius: 8px;
             overflow: hidden; /* 边框圆角 */
+            width: 100%; /* 表格宽度100% */
         }
 
-        .el-table th {
-            background-color: #f2f2f2; /* 表头背景色 */
+        .el-table th, .el-table td {
+            text-align: center; /* 表格内容居中 */
         }
 
-        .el-table td {
-            background-color: #ffffff; /* 单元格背景色 */
-        }
+        /* 媒体查询：针对小屏幕设备 */
+        @media (max-width: 768px) {
+            #divApp {
+                padding: 10px; /* 减少内边距 */
+            }
 
-        .el-table tr:hover {
-            background-color: #f9f9f9; /* 行悬停效果 */
+            .el-form-item {
+                width: 100%; /* 表单项宽度100% */
+            }
+
+            .el-input {
+                width: 100%; /* 输入框宽度100% */
+            }
+
+            .el-button {
+                width: 100%; /* 按钮宽度100% */
+                margin-bottom: 10px; /* 按钮之间的间距 */
+            }
+
+            .el-table {
+                font-size: 12px; /* 表格字体大小 */
+            }
         }
     </style>
 </head>
@@ -56,16 +79,8 @@
 <div id="divApp" style="text-align: center;width: 98%;">
     <el-form :inline="true" :model="searchCond" :rules="ruleSearchForm" class="demo-form-inline" ref="searchForm"
              style="text-align: left">
-        <div style="float: left">
-            <el-form-item label="子目录" prop="prefix" style="width:500px;">
-                <el-input placeholder="请输入" v-model.trim="searchCond.prefix" size="mini"
-                          style="width:340px;"></el-input>
-            </el-form-item>
-            <el-button @click="loadDatas('searchForm')" icon="el-icon-search" type="primary" size="mini">查询
-            </el-button>
-            <el-button @click="location.reload()" size="mini">刷新</el-button>
-        </div>
-        <div style="float: left; padding-left: 10px;">
+        <div style="float: left; display: flex; align-items: center;">
+            <el-button @click="location.reload()" size="mini" style="margin-right: 10px;">刷新</el-button>
             <el-upload
                     class="upload-demo"
                     :action="$$BASE_URL + 'stores/uploadFile?dir=' + encodeURIComponent(searchCond.prefix)"
@@ -78,20 +93,21 @@
                     :multiple="true"
                     :limit="100000"
                     :file-list="fileList">
-                <el-button size="small" type="primary">选择文件上传</el-button>
+                <el-button size="small" type="primary">文件上传</el-button>
             </el-upload>
-        </div>
-        <div style="float: left; padding-left: 10px;">
-            <span style="color: blue;font-size:12px">
-                <span>{{statusTxt}}</span>
-                【
-                <span>{{dirCount}}目录 {{fileCount}}文件</span>
-                <span v-if="totalSize">/{{byteToStr(totalSize)}}</span>
-                】
-            </span>
         </div>
         <div style="clear: both"></div>
     </el-form>
+
+    <div style="float: left; padding-left: 10px; width: 100%; text-align: left;">
+        <span style="color: blue;font-size:12px">
+            <span>{{statusTxt}}</span>
+            【
+            <span>{{dirCount}}目录 {{fileCount}}文件</span>
+            <span v-if="totalSize">/{{byteToStr(totalSize)}}</span>
+            】
+        </span>
+    </div>
 
     <!-- 结果数据 -->
     <el-table
@@ -208,6 +224,8 @@
     </el-dialog>
 </div>
 <script type="text/javascript">
+    const PARENT_DIR = '上级目录';
+
     const vueApp = new Vue({
         el: '#divApp',
         data: function () {
@@ -256,7 +274,7 @@
         computed: {},
         methods: {
             showSubDir: function (key) {
-                if (key === '..') {
+                if (key === PARENT_DIR) {
                     let idx = this.searchCond.prefix.lastIndexOf('/', this.searchCond.prefix.length - 2);
                     key = (idx <= 0) ? '' : this.searchCond.prefix.substring(0, idx + 1);
                     this.searchCond.prefix = key;
@@ -326,12 +344,17 @@
                         return;
                     }
                     if (response.data.code !== 0) {
-                        return vueAlert(response.data.msg);
+                        if (response.data.code === 12002) {
+                            // 无权限，返回根目录
+                            this.searchCond.prefix = '';
+                            this.loadDatasDo();
+                        }
+                        return vueAlert(response.data.msg, 3000);
                     }
                     let pageData = response.data.data;
                     if (this.searchCond.prefix !== '' && this.searchCond.prefix !== '/') {
                         pageData.unshift({
-                            name: '..',
+                            name: PARENT_DIR,
                             dir: true,
                         });
                     }
