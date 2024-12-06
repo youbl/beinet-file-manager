@@ -101,6 +101,7 @@
             width: 95%; /* 弹窗宽度95% */
             max-height: 70vh; /* 最大高度调整为70% */
         }
+
         video {
             max-height: 40vh; /* 视频最大高度调整为40vh */
         }
@@ -111,7 +112,9 @@
     <el-form :inline="true" :model="searchCond" :rules="ruleSearchForm" class="demo-form-inline" ref="searchForm"
              style="text-align: left">
         <div style="float: left; display: flex; align-items: center; width: 100%;">
-            <el-button @click="location.reload()" size="mini" style="margin-right: 10px; width: 80px; height: 30px;">刷新</el-button>
+            <el-button @click="location.reload()" size="mini" style="margin-right: 10px; width: 80px; height: 30px;">
+                刷新
+            </el-button>
             <el-upload
                     class="upload-demo"
                     :action="$$BASE_URL + 'stores/uploadFile?dir=' + encodeURIComponent(searchCond.prefix)"
@@ -168,12 +171,9 @@
             <template slot-scope="scope">
                 <div>
                     <div style="padding-bottom: 5px;">
-                        <a v-if="!scope.row.dir" href="#0" @click="openFile(scope.row.name)">下载</a>
+                        <a v-if="!scope.row.dir" href="#0" @click="openFile(scope.row.name)">打开</a>
                     </div>
                     <div>
-                        <a v-if="isMusic(scope.row.name)" href="#0" @click="openMusic(scope.row.name)">播放</a>
-                        <a v-if="isVideo(scope.row.name)" href="#0" @click="openVideo(scope.row.name)">播放</a>
-                        <a v-if="isImage(scope.row.name)" href="#0" @click="openImage(scope.row.name)">看图</a>
                         <a style="display: none" v-if="!scope.row.dir" href="#0" @click="showDelete(scope.row)">删除</a>
                     </div>
                 </div>
@@ -234,7 +234,8 @@
             <div style="margin-bottom: 10px; font-weight: bold;">{{ currentImagePath }}</div>
             <div style="display: flex; justify-content: center; gap: 10px;">
                 <el-button size="mini" @click="prevImage" :disabled="currentIndex === 0">上一张</el-button>
-                <el-button size="mini" @click="nextImage" :disabled="currentIndex === imageList.length - 1">下一张</el-button>
+                <el-button size="mini" @click="nextImage" :disabled="currentIndex === imageList.length - 1">下一张
+                </el-button>
                 <el-button size="mini" @click="closeImageDialog">关闭</el-button>
             </div>
             <img v-if="currentImageUrl" :src="currentImageUrl"
@@ -311,8 +312,17 @@
                 }
                 return this.loadDatasDo();
             },
-            openFile: function (key) {
-                const fullPath = this.searchCond.prefix + key;
+            openFile: function (filename) {
+                if (this.isMusic(filename)) {
+                    return this.openMusic(filename);
+                }
+                if (this.isVideo(filename)) {
+                    return this.openVideo(filename);
+                }
+                if (this.isImage(filename)) {
+                    return this.openImage(filename);
+                }
+                const fullPath = this.searchCond.prefix + filename;
                 let url = $$BASE_URL + 'stores/download?file=' + encodeURIComponent(fullPath);
                 window.open(url);
             },
