@@ -117,7 +117,7 @@
             v-loading="loading"
             height="800"
             style="width: 100%">
-        <el-table-column label="目录或文件名" width="500">
+        <el-table-column label="目录/文件">
             <template slot-scope="scope">
                 <div v-if="scope.row.dir">
                     <i class="el-icon-folder-opened"></i>
@@ -130,26 +130,26 @@
                     <a href="#0" @click="openFile(scope.row.name)" style="text-decoration: none;">
                         {{scope.row.name}}
                     </a></div>
+                <div>{{scope.row.modified?getStrTimeFromTimestamp(scope.row.modified):''}}</div>
             </template>
         </el-table-column>
-        <el-table-column label="大小" width="110">
+        <el-table-column label="大小" width="65">
             <template slot-scope="scope">
                 <div>{{scope.row.dir?'目录':byteToStr(scope.row.size)}}</div>
             </template>
         </el-table-column>
-        <el-table-column label="最后修改时间" width="190">
-            <template slot-scope="scope">
-                <div>{{scope.row.modified?getStrTimeFromTimestamp(scope.row.modified):'-'}}</div>
-            </template>
-        </el-table-column>
-        <el-table-column label="" width="150">
+        <el-table-column label="" width="50">
             <template slot-scope="scope">
                 <div>
-                    <a v-if="!scope.row.dir" href="#0" @click="openFile(scope.row.name)">下载</a>
-                    <a v-if="isMusic(scope.row.name)" href="#0" @click="openMusic(scope.row.name)">播放音乐</a>
-                    <a v-if="isVideo(scope.row.name)" href="#0" @click="openVideo(scope.row.name)">播放视频</a>
-                    <a v-if="isImage(scope.row.name)" href="#0" @click="openImage(scope.row.name)">查看图片</a>
-                    <a style="display: none" v-if="!scope.row.dir" href="#0" @click="showDelete(scope.row)">删除</a>
+                    <div style="padding-bottom: 5px;">
+                        <a v-if="!scope.row.dir" href="#0" @click="openFile(scope.row.name)">下载</a>
+                    </div>
+                    <div>
+                        <a v-if="isMusic(scope.row.name)" href="#0" @click="openMusic(scope.row.name)">播放</a>
+                        <a v-if="isVideo(scope.row.name)" href="#0" @click="openVideo(scope.row.name)">播放</a>
+                        <a v-if="isImage(scope.row.name)" href="#0" @click="openImage(scope.row.name)">看图</a>
+                        <a style="display: none" v-if="!scope.row.dir" href="#0" @click="showDelete(scope.row)">删除</a>
+                    </div>
                 </div>
             </template>
         </el-table-column>
