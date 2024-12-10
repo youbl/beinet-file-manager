@@ -26,5 +26,7 @@ public class AdminApplication implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         //System.out.println(SystemConst.getOuterIp());
+        String startupPath = System.getProperty("user.dir");
+        System.out.println(startupPath);
     }
 }
