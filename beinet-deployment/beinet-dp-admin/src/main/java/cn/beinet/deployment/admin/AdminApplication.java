@@ -1,5 +1,6 @@
 package cn.beinet.deployment.admin;
 
+import cn.beinet.core.base.configs.SystemConst;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -29,11 +30,12 @@ public class AdminApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // 输出 D:\mine\beinet-file-manager, 如果使用java -jar方法，则会得到java.exe目录，如 C:\jdk-21.0.3\bin
-        System.out.println(System.getProperty("user.dir"));
+        // 输出 D:\mine\beinet-file-manager, 如果使用java -jar方法，则会得到启动目录，比如用服务启动就是java.exe目录，如 C:\jdk-21.0.3\bin
+        // 如果是在cmd里启动，那就是cmd窗口显示的那个目录
+        System.out.println("1.--- " + System.getProperty("user.dir"));
 
         // 输出 C:\Users\youbl，如果以服务启动，会输出：C:\Windows\system32\config\systemprofile
-        System.out.println(System.getProperty("user.home"));
+        System.out.println("2.--- " + System.getProperty("user.home"));
 
         // 获取 jar 文件所在目录
         String path = this.getClass().getProtectionDomain()
@@ -43,6 +45,8 @@ public class AdminApplication implements CommandLineRunner {
         // 解码 URL 编码的路径
         path = URLDecoder.decode(path, StandardCharsets.UTF_8);
         File jarFile = new File(path);
-        System.out.println(jarFile.getParentFile().getAbsolutePath());
+        System.out.println("3.--- " + jarFile.getAbsolutePath());
+
+        System.out.println("4.--- " + SystemConst.getBaseDir());
     }
 }

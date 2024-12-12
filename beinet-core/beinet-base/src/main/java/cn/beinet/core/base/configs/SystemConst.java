@@ -22,10 +22,11 @@ import java.nio.charset.StandardCharsets;
 public class SystemConst {
 
     /**
-     * 通过 java -jar 形式启动时，这个是java.exe所在的目录
+     * 通过 java -jar 形式启动时的启动目录，就是在哪个目录下启动的命令行。
+     * 注：不一定是java.exe目录
      */
     @Getter
-    private static String javaDir;
+    private static String startDir;
 
     /**
      * 主jar包文件的所在目录
@@ -58,7 +59,7 @@ public class SystemConst {
      */
     public static void refresh() {
         baseDir = readBaseDir();
-        javaDir = readJavaDir();
+        startDir = readStartDir();
 
         serverIp = readServerIp();
         outerIp = readOuterIp();
@@ -74,23 +75,52 @@ public class SystemConst {
                     .getPath();
             // 解码 URL 编码的路径
             path = URLDecoder.decode(path, StandardCharsets.UTF_8);
-            File jarFile = new File(path);
-            String dir = jarFile.getParentFile().getAbsolutePath();
-            if (!dir.endsWith("/") && !dir.endsWith("\\")) {
-                dir = dir + "/";
+
+            String jarPath = new File(path)
+                    .getAbsolutePath()
+                    .replace('\\', '/');
+
+            log.info("=====Start class path is: " + jarPath + "=====");
+            jarPath = replaceNestedDir(jarPath);
+            log.info("=====Start jar's path is: " + jarPath + "=====");
+
+            // 上面得到的是jar的文件路径，要取它所在的目录
+            int idx = jarPath.lastIndexOf('/');
+            if (idx > 0) {
+                jarPath = jarPath.substring(0, idx);
             }
-            return dir.replace('\\', '/');
+            if (!jarPath.endsWith("/") && !jarPath.endsWith("\\")) {
+                jarPath = jarPath + "/";
+            }
+            return jarPath;
         } catch (Exception e) {
             log.error("获取jar目录失败:", e);
             return "";
         }
     }
 
-    private static String readJavaDir() {
-        String dir = System.getProperty("user.dir");
-        if (dir == null) {
-            dir = System.getProperty("user.home");
+    // 通过java -jar启动时，会得到nested开头 和 .jar/结尾的内容目录，要替换掉
+    private static String replaceNestedDir(String path) {
+        // D:/mine/nested:/D:/mine/beinet-dp-admin-1.0-SNAPSHOT.jar/!BOOT-INF/lib/beinet-base-1.0-SNAPSHOT.jar!
+        String nested = "nested:/";
+        int idxNest = path.indexOf(nested);
+        if (idxNest != -1) {
+            path = path.substring(idxNest + nested.length());
         }
+        String jar = ".jar/";
+        int idxJar = path.indexOf(jar);
+        if (idxJar != -1) {
+            // 减1，是去掉 .jar后的那个/
+            path = path.substring(0, idxJar + jar.length() - 1);
+        }
+        return path;
+    }
+
+    private static String readStartDir() {
+        String dir = System.getProperty("user.dir");
+//        if (dir == null) {
+//            dir = System.getProperty("user.home");
+//        }
         if (dir == null) {
             dir = "/";
         } else if (!dir.endsWith("/") && !dir.endsWith("\\")) {
