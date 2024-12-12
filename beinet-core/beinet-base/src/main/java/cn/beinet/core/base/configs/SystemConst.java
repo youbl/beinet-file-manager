@@ -1,12 +1,16 @@
 package cn.beinet.core.base.configs;
 
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 
 /**
  * 系统级的常量
@@ -14,10 +18,17 @@ import java.net.URL;
  * @author youbl
  * @since 2024/7/18 13:44
  */
+@Slf4j
 public class SystemConst {
 
     /**
-     * 主jar包的所在目录
+     * 通过 java -jar 形式启动时，这个是java.exe所在的目录
+     */
+    @Getter
+    private static String javaDir;
+
+    /**
+     * 主jar包文件的所在目录
      */
     @Getter
     private static String baseDir;
@@ -47,12 +58,35 @@ public class SystemConst {
      */
     public static void refresh() {
         baseDir = readBaseDir();
+        javaDir = readJavaDir();
+
         serverIp = readServerIp();
         outerIp = readOuterIp();
         osInfo = readOsInfo();
     }
 
     private static String readBaseDir() {
+        try {
+            // 获取 jar 文件所在目录
+            String path = SystemConst.class.getProtectionDomain()
+                    .getCodeSource()
+                    .getLocation()
+                    .getPath();
+            // 解码 URL 编码的路径
+            path = URLDecoder.decode(path, StandardCharsets.UTF_8);
+            File jarFile = new File(path);
+            String dir = jarFile.getParentFile().getAbsolutePath();
+            if (!dir.endsWith("/") && !dir.endsWith("\\")) {
+                dir = dir + "/";
+            }
+            return dir.replace('\\', '/');
+        } catch (Exception e) {
+            log.error("获取jar目录失败:", e);
+            return "";
+        }
+    }
+
+    private static String readJavaDir() {
         String dir = System.getProperty("user.dir");
         if (dir == null) {
             dir = System.getProperty("user.home");
@@ -62,7 +96,7 @@ public class SystemConst {
         } else if (!dir.endsWith("/") && !dir.endsWith("\\")) {
             dir = dir + "/";
         }
-        return dir;
+        return dir.replace('\\', '/');
     }
 
     private static String readServerIp() {
