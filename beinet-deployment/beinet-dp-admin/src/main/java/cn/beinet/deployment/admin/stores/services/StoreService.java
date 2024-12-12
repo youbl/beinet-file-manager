@@ -35,7 +35,7 @@ public class StoreService {
             return getConfigDir();
         }
 
-        dir = validDir(dir);
+        dir = isReadonlyDir(dir);
         List<StoreInfo> storeInfos = new ArrayList<>();
         File dirFile = new File(dir);
         if (dirFile.isDirectory()) {
@@ -72,7 +72,7 @@ public class StoreService {
      * @return 上传结果文件完整路径
      */
     public String uploadFile(MultipartFile file, String dir) {
-        dir = validDir(dir);
+        dir = isWritableDir(dir);
 
         String fileName = StringUtils.hasLength(file.getOriginalFilename()) ? file.getOriginalFilename() : "noName";
         String fullName = dir + fileName;
@@ -83,7 +83,7 @@ public class StoreService {
 
     @SneakyThrows
     public void download(String file, HttpServletResponse response) {
-        String filePath = validDir(file);
+        String filePath = isReadonlyDir(file);
         File fileToDownload = new File(filePath);
         if (!fileToDownload.exists() || !fileToDownload.isFile()) {
             throw BaseException.of(StoreErrorCode.STORE_ERR_FILE_NOT_EXISTS, "要下载的文件不存在:" + filePath);
@@ -107,7 +107,7 @@ public class StoreService {
 
     @SneakyThrows
     public void downloadWithRange(String file, HttpServletResponse response, String rangeHeader) {
-        String filePath = validDir(file);
+        String filePath = isReadonlyDir(file);
         File fileToDownload = new File(filePath);
         if (!fileToDownload.exists() || !fileToDownload.isFile()) {
             throw BaseException.of(StoreErrorCode.STORE_ERR_FILE_NOT_EXISTS, "要下载的文件不存在:" + filePath);
@@ -191,39 +191,41 @@ public class StoreService {
      */
     private boolean isVideoFile(String fileName) {
         fileName = fileName.toLowerCase();
-        return fileName.endsWith(".mp4") 
-               || fileName.endsWith(".webm") 
-               || fileName.endsWith(".ogg")
-               || fileName.endsWith(".mov")
-               || fileName.endsWith(".avi")
-               || fileName.endsWith(".mkv");
+        return fileName.endsWith(".mp4")
+                || fileName.endsWith(".webm")
+                || fileName.endsWith(".ogg")
+                || fileName.endsWith(".mov")
+                || fileName.endsWith(".avi")
+                || fileName.endsWith(".mkv");
     }
 
     /**
-     * 校验目录是否允许操作
+     * 校验目录是否允许读取
      * @param dir 要校验的子目录
      */
-    private String validDir(String dir) {
-        if (fileManagerConfig == null) {
-            throw BaseException.of(StoreErrorCode.STORE_ERR_NO_BASE_DIR_CONFIG, "yml里没有配置可访问的目录");
-        }
+    private String isReadonlyDir(String dir) {
         String checkedDir = FileHelper.clearDirName(dir);
-        if (!fileManagerConfig.containsDir(checkedDir)) {
-            throw BaseException.of(StoreErrorCode.STORE_ERR_NO_PERMISSION, "不允许访问的目录:" + checkedDir);
+        if (fileManagerConfig.canReadDir(checkedDir)) {
+            // 要返回清理后的目录
+            return checkedDir;
         }
-        return checkedDir;
+        throw BaseException.of(StoreErrorCode.STORE_ERR_NO_PERMISSION, "不允许访问的目录:" + checkedDir);
+    }
+
+    /**
+     * 校验目录是否允许编辑
+     * @param dir 要校验的子目录
+     */
+    private String isWritableDir(String dir) {
+        String checkedDir = FileHelper.clearDirName(dir);
+        if (fileManagerConfig.canWriteDir(checkedDir)) {
+            // 要返回清理后的目录
+            return checkedDir;
+        }
+        throw BaseException.of(StoreErrorCode.STORE_ERR_NO_PERMISSION, "不允许写入的目录:" + checkedDir);
     }
 
     private List<StoreInfo> getConfigDir() {
-        var arr = fileManagerConfig.getDir();
-        var ret = new ArrayList<StoreInfo>();
-        for (var file : arr) {
-            StoreInfo storeInfo = new StoreInfo()
-                    .setName(file)
-                    .setDir(true)
-                    .setPath(file);
-            ret.add(storeInfo);
-        }
-        return ret;
+        return fileManagerConfig.getDir();
     }
 }

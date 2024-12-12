@@ -44,4 +44,7 @@ public class StoreInfo {
      */
     @Schema(description = "最后修改时间")
     private long modified;
+
+    @Schema(description = "是否只读")
+    private boolean readonly = true;
 }

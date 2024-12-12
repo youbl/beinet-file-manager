@@ -19,7 +19,7 @@ public class GlobalExceptionFilter {
     @ExceptionHandler(value = Exception.class)
     public ResponseData exceptionHandler(Exception e) {
         //System.out.println("未知异常！原因是:" + e);
-        log.error("全局异常:", e);
+        log.error("全局异常: {}", e.getMessage());
 
         int errCode = getErrorCode(e);
         String msg = getMessage(e);

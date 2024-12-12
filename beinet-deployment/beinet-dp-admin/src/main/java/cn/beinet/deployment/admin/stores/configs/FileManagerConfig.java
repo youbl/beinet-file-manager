@@ -2,6 +2,7 @@ package cn.beinet.deployment.admin.stores.configs;
 
 import cn.beinet.core.base.configs.SystemConst;
 import cn.beinet.core.utils.FileHelper;
+import cn.beinet.deployment.admin.stores.dtos.StoreInfo;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -22,16 +23,17 @@ import java.util.concurrent.atomic.AtomicLong;
 @Component
 @Slf4j
 public class FileManagerConfig {
-    private static final String CONFIG_FILE = "config.ini";
+    private static final String CONFIG_FILE = SystemConst.getBaseDir() + "config.ini";
 
     /**
      * 是否启用文件管理
      */
     private boolean enabled;
 
-    private List<String> dir;
-
-    private boolean inited = false;
+    /**
+     * 允许访问的目录列表
+     */
+    private List<StoreInfo> dir;
 
     // 记录配置文件最后修改时间
     private final AtomicLong lastModifiedTime = new AtomicLong(0);
@@ -44,38 +46,41 @@ public class FileManagerConfig {
      * 返回允许操作的根目录列表
      * @return 允许操作的根目录列表
      */
-    public List<String> getDir() {
+    public List<StoreInfo> getDir() {
         if (dir == null || dir.isEmpty()) {
-            throw new RuntimeException("yml里没有配置可访问的目录");
+            throw new RuntimeException(CONFIG_FILE + "没有配置可访问的目录");
         }
-        if (inited) {
-            return dir;
-        }
-
-        if (!enabled) {
-            dir = new ArrayList<>();
-            return dir;
-        }
-        for (int i = 0, j = dir.size(); i < j; i++) {
-            var item = dir.get(i);
-            item = FileHelper.clearDirName(item);
-            dir.set(i, item);
-        }
-        inited = true;
         return dir;
     }
 
     /**
-     * 指定的目录，是否是允许操作的目录的子目录
+     * 指定的目录，是否是允许读操作的目录的子目录
      * @param usedDir 要操作的子目录
-     * @return 是否允许操作
+     * @return 是否允许读取
      */
-    public boolean containsDir(String usedDir) {
+    public boolean canReadDir(String usedDir) {
         if (!enabled) {
             return false;
         }
-        for (String dir : getDir()) {
-            if (usedDir.startsWith(dir)) {
+        for (StoreInfo dir : getDir()) {
+            if (usedDir.startsWith(dir.getPath())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 指定的目录，是否是允许写入操作的目录的子目录
+     * @param usedDir 要操作的子目录
+     * @return 是否允许写入
+     */
+    public boolean canWriteDir(String usedDir) {
+        if (!enabled) {
+            return false;
+        }
+        for (StoreInfo dir : getDir()) {
+            if (!dir.isReadonly() && usedDir.startsWith(dir.getPath())) {
                 return true;
             }
         }
@@ -93,7 +98,7 @@ public class FileManagerConfig {
 
     @SneakyThrows
     private void checkConfigFileChanged() {
-        String path = SystemConst.getBaseDir() + CONFIG_FILE;
+        String path = CONFIG_FILE;
 
         // 检查配置文件是否存在
         java.io.File configFile = new java.io.File(path);
@@ -104,38 +109,40 @@ public class FileManagerConfig {
             return;
         }
 
-        // 更新最后修改时间
-        long currentModifiedTime = configFile.lastModified();
-
         // 如果文件修改时间没有变化，不重新加载
-        if (lastModifiedTime.get() == currentModifiedTime) {
+        long currentModifiedTime = configFile.lastModified();
+        if (currentModifiedTime <= lastModifiedTime.get()) {
             return;
         }
 
+        // 从文件读取配置，并存入当前类的字段
+        initFromIni(path);
+
+        // 更新最后修改时间
+        lastModifiedTime.set(currentModifiedTime);
+        log.info("FileManagerConfig 初始化完成，enabled: {}, dirs: {}", enabled, dir);
+    }
+
+    private void initFromIni(String path) {
         Map<String, String> configs = readIni(path);
 
         // 读取是否启用文件管理
         String enabledStr = configs.get("enabled");
         this.enabled = enabledStr != null && enabledStr.equalsIgnoreCase("true");
 
-        // 读取允许操作的目录列表
-        String dirStr = configs.get("dirs");
-        if (dirStr != null && !dirStr.isEmpty()) {
-            dirStr = dirStr.replace('\\', '/')
-                    .replace("//", "/");
-            // 按逗号分隔目录
-            this.dir = java.util.Arrays.stream(dirStr.split(","))
-                    .map(String::trim)
-                    .filter(item -> !item.isEmpty())
-                    .collect(java.util.stream.Collectors.toList());
-        } else {
-            this.dir = new ArrayList<>();
-        }
+        Map<String, StoreInfo> storeInfos = new HashMap<>();
 
-        // 更新最后修改时间
-        lastModifiedTime.set(currentModifiedTime);
-        this.inited = true;
-        log.info("FileManagerConfig 初始化完成，enabled: {}, dirs: {}", enabled, dir);
+        // 读取允许编辑操作的目录列表，防止同一个目录又可编辑，又设置只读
+        String writableDirStr = configs.get("write-dir");
+        List<StoreInfo> tmpWritable = toStoreInfoList(writableDirStr, false);
+        putInMap(storeInfos, tmpWritable);
+
+        // 读取允许只读操作的目录列表
+        String readonlyDirStr = configs.get("read-dir");
+        List<StoreInfo> tmpReadonly = toStoreInfoList(readonlyDirStr, true);
+        putInMap(storeInfos, tmpReadonly);
+
+        this.dir = storeInfos.values().stream().toList();
     }
 
     private static Map<String, String> readIni(String path) {
@@ -162,5 +169,39 @@ public class FileManagerConfig {
             map.put(key, value);
         }
         return map;
+    }
+
+    // 把逗号分隔的目录列表，转换为StoreInfo数组返回
+    private List<StoreInfo> toStoreInfoList(String dirStr, boolean readonly) {
+        if (dirStr == null || dirStr.isEmpty()) {
+            return null;
+        }
+        dirStr = dirStr.replace('\\', '/')
+                .replace("//", "/");
+
+        // 按逗号分隔目录
+        return java.util.Arrays.stream(dirStr.split(","))
+                .map(item -> convertToStoreInfo(item, readonly))
+                .filter(item -> !item.getName().isEmpty())
+                .toList();
+    }
+
+    private void putInMap(Map<String, StoreInfo> map, List<StoreInfo> configs) {
+        if (configs != null) {
+            for (StoreInfo storeInfo : configs) {
+                if (!map.containsKey(storeInfo.getName())) {
+                    map.put(storeInfo.getName(), storeInfo);
+                }
+            }
+        }
+    }
+
+    private StoreInfo convertToStoreInfo(String dir, boolean readonly) {
+        dir = FileHelper.clearDirName(dir);
+        return new StoreInfo()
+                .setDir(true)
+                .setReadonly(readonly)
+                .setName(dir)
+                .setPath(dir);
     }
 }
