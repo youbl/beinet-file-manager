@@ -1,21 +1,25 @@
 package cn.beinet.deployment.admin.stores.configs;
 
+import cn.beinet.core.base.configs.SystemConst;
 import cn.beinet.core.utils.FileHelper;
-import lombok.Data;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 文件管理的配置类
+ * 文件管理的配置类.
+ * 从jar所在目录下读取ini文件
  * @author youbl
  * @since 2024/12/3 17:14
  */
-@Configuration
-@ConfigurationProperties(prefix = "file-manager")
-@Data
+@Component
+@Slf4j
 public class FileManagerConfig {
+    private static final String CONFIG_FILE = "config.ini";
+
     /**
      * 是否启用文件管理
      */
@@ -24,6 +28,14 @@ public class FileManagerConfig {
     private List<String> dir;
 
     private boolean inited = false;
+
+    public FileManagerConfig() {
+        try {
+            init();
+        } catch (Exception e) {
+            log.error("FileManagerConfig init err:", e);
+        }
+    }
 
     /**
      * 返回允许操作的根目录列表
@@ -34,6 +46,11 @@ public class FileManagerConfig {
             throw new RuntimeException("yml里没有配置可访问的目录");
         }
         if (inited) {
+            return dir;
+        }
+
+        if (!enabled) {
+            dir = new ArrayList<>();
             return dir;
         }
         for (int i = 0, j = dir.size(); i < j; i++) {
@@ -60,5 +77,39 @@ public class FileManagerConfig {
             }
         }
         return false;
+    }
+
+    @SneakyThrows
+    private void init() {
+        String path = SystemConst.getBaseDir() + CONFIG_FILE;
+        
+        // 检查配置文件是否存在
+        java.io.File configFile = new java.io.File(path);
+        if (!configFile.exists()) {
+            log.warn("配置文件不存在: {}", path);
+            return;
+        }
+
+        // 使用 Properties 读取 INI 文件
+        java.util.Properties props = new java.util.Properties();
+        try (java.io.FileInputStream fis = new java.io.FileInputStream(configFile)) {
+            props.load(fis);
+        }
+
+        // 读取是否启用文件管理
+        String enabledStr = props.getProperty("enabled", "false");
+        this.enabled = Boolean.parseBoolean(enabledStr);
+
+        // 读取允许操作的目录列表
+        String dirStr = props.getProperty("dirs", "");
+        if (dirStr != null && !dirStr.trim().isEmpty()) {
+            // 按逗号分隔目录
+            this.dir = java.util.Arrays.stream(dirStr.split(","))
+                    .map(String::trim)
+                    .filter(item -> !item.isEmpty())
+                    .collect(java.util.stream.Collectors.toList());
+        } else {
+            this.dir = new ArrayList<>();
+        }
     }
 }

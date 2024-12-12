@@ -35,11 +35,3 @@ sdk:
 jasypt:
   encryptor:
     password: .beinet.cn.
-
-# 文件管理器允许访问的根目录列表
-file-manager:
-  enabled: true
-  dir:
-    - d:/mp3
-    - D:/initSofts/normal/
-    - D:/tmp

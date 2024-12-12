@@ -15,6 +15,13 @@ import java.net.URL;
  * @since 2024/7/18 13:44
  */
 public class SystemConst {
+
+    /**
+     * 主jar包的所在目录
+     */
+    @Getter
+    private static String baseDir;
+
     /**
      * 服务器IP
      */
@@ -39,9 +46,23 @@ public class SystemConst {
      * 重新读取这些系统常量
      */
     public static void refresh() {
+        baseDir = readBaseDir();
         serverIp = readServerIp();
         outerIp = readOuterIp();
         osInfo = readOsInfo();
+    }
+
+    private static String readBaseDir() {
+        String dir = System.getProperty("user.dir");
+        if (dir == null) {
+            dir = System.getProperty("user.home");
+        }
+        if (dir == null) {
+            dir = "/";
+        } else if (!dir.endsWith("/") && !dir.endsWith("\\")) {
+            dir = dir + "/";
+        }
+        return dir;
     }
 
     private static String readServerIp() {

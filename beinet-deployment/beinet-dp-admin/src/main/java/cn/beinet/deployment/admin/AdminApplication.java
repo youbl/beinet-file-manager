@@ -25,8 +25,7 @@ public class AdminApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        //System.out.println(SystemConst.getOuterIp());
-        String startupPath = System.getProperty("user.dir");
-        System.out.println(startupPath);
+        System.out.println(System.getProperty("user.dir"));  // 输出 D:\mine\beinet-file-manager
+        System.out.println(System.getProperty("user.home")); // 输出 C:\Users\youbl
     }
 }
