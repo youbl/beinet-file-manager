@@ -94,7 +94,8 @@ public class StoreService {
                 .setDir(true)
                 .setModified(dirFile.lastModified())
                 .setSize(0);
-        ret.setReadonly(isWritableDir(ret.getPath()));
+        boolean readonly = !isWritableDir(ret.getPath());
+        ret.setReadonly(readonly);
         return ret;
     }
 
