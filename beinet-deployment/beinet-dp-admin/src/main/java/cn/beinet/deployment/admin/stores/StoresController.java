@@ -3,6 +3,8 @@ package cn.beinet.deployment.admin.stores;
 import cn.beinet.core.base.commonDto.ResponseData;
 import cn.beinet.deployment.admin.stores.dtos.StoreInfo;
 import cn.beinet.deployment.admin.stores.services.StoreService;
+import cn.beinet.sdk.event.annotation.EventLog;
+import cn.beinet.sdk.event.enums.EventSubType;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -30,6 +32,7 @@ public class StoresController {
     private final StoreService storeService;
 
     @PostMapping("stores/uploadFile")
+    @EventLog(subType = EventSubType.FILE_UPLOAD)
     public ResponseData<String> uploadFile(@RequestBody MultipartFile file,
                                            @RequestParam String dir) {
         if (file == null) {

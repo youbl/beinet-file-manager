@@ -66,9 +66,15 @@
             </dependency>
 
             <dependency>
+                <groupId>cn.beinet</groupId>
+                <artifactId>beinet-event-sdk</artifactId>
+                <version>${beinet.version}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-starter-openfeign</artifactId>
-                <version>4.1.4</version>
+                <version>4.2.0</version>
             </dependency>
             <dependency>
                 <groupId>org.springdoc</groupId>
