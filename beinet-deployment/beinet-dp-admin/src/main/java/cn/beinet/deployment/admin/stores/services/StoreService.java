@@ -30,14 +30,19 @@ import java.util.List;
 public class StoreService {
     private final FileManagerConfig fileManagerConfig;
 
+    /**
+     * 获取指定目录下的一级子目录和文件列表
+     * @param dir 目录
+     * @return 一级子目录和文件列表
+     */
     public List<StoreInfo> getList(String dir) {
         if (dir == null || dir.isEmpty()) {
             return getConfigDir();
         }
 
-        dir = isReadonlyDir(dir);
+        File dirFile = getReadableDir(dir);
+
         List<StoreInfo> storeInfos = new ArrayList<>();
-        File dirFile = new File(dir);
         if (dirFile.isDirectory()) {
             File[] files = dirFile.listFiles();
             if (files != null) {
@@ -50,6 +55,8 @@ public class StoreService {
                             .setSize(0);
                     if (!file.isDirectory()) {
                         storeInfo.setSize(file.length());
+                    } else {
+                        storeInfo.setReadonly(isWritableDir(storeInfo.getPath()));
                     }
                     storeInfos.add(storeInfo);
                 }
@@ -68,11 +75,38 @@ public class StoreService {
     }
 
     /**
+     * 获取指定目录的信息，包括是否允许上传
+     * @param dir 目录
+     * @return 目录信息
+     */
+    public StoreInfo getStatus(String dir) {
+        dir = FileHelper.clearDirName(dir);
+        if (!fileManagerConfig.canReadDir(dir)) {
+            return null;
+        }
+        File dirFile = new File(dir);
+        if (!dirFile.isDirectory()) {
+            return null;
+        }
+        StoreInfo ret = new StoreInfo()
+                .setName(dirFile.getName())
+                .setPath(dirFile.getAbsolutePath())
+                .setDir(true)
+                .setModified(dirFile.lastModified())
+                .setSize(0);
+        ret.setReadonly(isWritableDir(ret.getPath()));
+        return ret;
+    }
+
+    /**
      * 上传文件到指定目录
      * @return 上传结果文件完整路径
      */
     public String uploadFile(MultipartFile file, String dir) {
-        dir = isWritableDir(dir);
+        dir = FileHelper.clearDirName(dir);
+        if (!fileManagerConfig.canWriteDir(dir)) {
+            throw BaseException.of(StoreErrorCode.STORE_ERR_NO_PERMISSION, "不允许写入的目录:" + dir);
+        }
 
         String fileName = StringUtils.hasLength(file.getOriginalFilename()) ? file.getOriginalFilename() : "noName";
         String fullName = dir + fileName;
@@ -83,10 +117,9 @@ public class StoreService {
 
     @SneakyThrows
     public void download(String file, HttpServletResponse response) {
-        String filePath = isReadonlyDir(file);
-        File fileToDownload = new File(filePath);
+        File fileToDownload = getReadableDir(file);
         if (!fileToDownload.exists() || !fileToDownload.isFile()) {
-            throw BaseException.of(StoreErrorCode.STORE_ERR_FILE_NOT_EXISTS, "要下载的文件不存在:" + filePath);
+            throw BaseException.of(StoreErrorCode.STORE_ERR_FILE_NOT_EXISTS, "要下载的文件不存在:" + file);
         }
         long fileLength = fileToDownload.length();
         response.setHeader("Content-Length", String.valueOf(fileLength));
@@ -107,10 +140,9 @@ public class StoreService {
 
     @SneakyThrows
     public void downloadWithRange(String file, HttpServletResponse response, String rangeHeader) {
-        String filePath = isReadonlyDir(file);
-        File fileToDownload = new File(filePath);
+        File fileToDownload = getReadableDir(file);
         if (!fileToDownload.exists() || !fileToDownload.isFile()) {
-            throw BaseException.of(StoreErrorCode.STORE_ERR_FILE_NOT_EXISTS, "要下载的文件不存在:" + filePath);
+            throw BaseException.of(StoreErrorCode.STORE_ERR_FILE_NOT_EXISTS, "要下载的文件不存在:" + file);
         }
 
         long fileLength = fileToDownload.length();
@@ -199,30 +231,17 @@ public class StoreService {
                 || fileName.endsWith(".mkv");
     }
 
-    /**
-     * 校验目录是否允许读取
-     * @param dir 要校验的子目录
-     */
-    private String isReadonlyDir(String dir) {
+    private boolean isWritableDir(String dir) {
         String checkedDir = FileHelper.clearDirName(dir);
-        if (fileManagerConfig.canReadDir(checkedDir)) {
-            // 要返回清理后的目录
-            return checkedDir;
-        }
-        throw BaseException.of(StoreErrorCode.STORE_ERR_NO_PERMISSION, "不允许访问的目录:" + checkedDir);
+        return (fileManagerConfig.canWriteDir(checkedDir));
     }
 
-    /**
-     * 校验目录是否允许编辑
-     * @param dir 要校验的子目录
-     */
-    private String isWritableDir(String dir) {
-        String checkedDir = FileHelper.clearDirName(dir);
-        if (fileManagerConfig.canWriteDir(checkedDir)) {
-            // 要返回清理后的目录
-            return checkedDir;
+    private File getReadableDir(String dir) {
+        dir = FileHelper.clearDirName(dir);
+        if (!fileManagerConfig.canReadDir(dir)) {
+            throw BaseException.of(StoreErrorCode.STORE_ERR_NO_PERMISSION, "不允许访问的目录:" + dir);
         }
-        throw BaseException.of(StoreErrorCode.STORE_ERR_NO_PERMISSION, "不允许写入的目录:" + checkedDir);
+        return new File(dir);
     }
 
     private List<StoreInfo> getConfigDir() {

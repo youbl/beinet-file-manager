@@ -109,15 +109,15 @@
 </head>
 <body>
 <div id="divApp" style="text-align: center;width: 98%;">
-    <el-form :inline="true" :model="searchCond" :rules="ruleSearchForm" class="demo-form-inline" ref="searchForm"
+    <el-form :inline="true" class="demo-form-inline" ref="searchForm"
              style="text-align: left">
         <div style="float: left; display: flex; align-items: center; width: 100%;">
-            <el-button @click="location.reload()" size="mini" style="margin-right: 10px; width: 80px; height: 30px;">
-                刷新
-            </el-button>
+            <span style="margin-right: 10px; font-size: 12px;">{{dir}}</span>
+            <el-link type="primary" @click="refreshPage()" style="margin-right: 10px;"> 刷新</el-link>
             <el-upload
+                    v-if="!isReadonly"
                     class="upload-demo"
-                    :action="$$BASE_URL + 'stores/uploadFile?dir=' + encodeURIComponent(searchCond.prefix)"
+                    :action="$$BASE_URL + 'stores/uploadFile?dir=' + encodeURIComponent(dir)"
                     :on-preview="handleUploadPreview"
                     :on-remove="handleUploadRemove"
                     :before-remove="beforeUploadRemove"
@@ -127,7 +127,7 @@
                     :multiple="true"
                     :limit="100000"
                     :file-list="fileList">
-                <el-button size="small" type="primary">文件上传</el-button>
+                <el-link type="primary">文件上传</el-link>
             </el-upload>
             <span style="color: blue; font-size: 12px; flex-grow: 1; text-align: right;">
                 【
@@ -146,7 +146,7 @@
             stripe
             v-loading="loading"
             height="800"
-            style="width: 100%">
+            style="width: 100%; margin-top: 15px;">
         <el-table-column label="目录/文件">
             <template slot-scope="scope">
                 <div v-if="scope.row.dir">
@@ -258,10 +258,9 @@
             return {
                 loading: false,
                 statusTxt: '',
+                isReadonly: true,// 当前访问的目录是否只读
 
-                searchCond: {
-                    prefix: '',
-                },
+                dir: '',
                 // 搜索form的验证条件
                 ruleSearchForm: {
                     // teamId: [
@@ -295,20 +294,28 @@
             }
         },
         mounted: function () {
+            this.dir = getQueryString('dir');
             this.loadDatasDo();
         },
         computed: {},
         methods: {
+            refreshPage: function () {
+                if (this.dir === getQueryString('dir')) {
+                    location.reload();
+                } else {
+                    this.loadDatasDo();
+                }
+            },
             showSubDir: function (key) {
                 if (key === PARENT_DIR) {
-                    let idx = this.searchCond.prefix.lastIndexOf('/', this.searchCond.prefix.length - 2);
-                    key = (idx <= 0) ? '' : this.searchCond.prefix.substring(0, idx + 1);
-                    this.searchCond.prefix = key;
+                    let idx = this.dir.lastIndexOf('/', this.dir.length - 2);
+                    key = (idx <= 0) ? '' : this.dir.substring(0, idx + 1);
+                    this.dir = key;
                 } else {
-                    this.searchCond.prefix = this.searchCond.prefix + key;
+                    this.dir = this.dir + key;
                 }
-                if (!this.searchCond.prefix.endsWith('/')) {
-                    this.searchCond.prefix += '/';
+                if (!this.dir.endsWith('/')) {
+                    this.dir += '/';
                 }
                 return this.loadDatasDo();
             },
@@ -322,7 +329,7 @@
                 if (this.isImage(filename)) {
                     return this.openImage(filename);
                 }
-                const fullPath = this.searchCond.prefix + filename;
+                const fullPath = this.dir + filename;
                 let url = $$BASE_URL + 'stores/download?file=' + encodeURIComponent(fullPath);
                 window.open(url);
             },
@@ -331,7 +338,7 @@
                 return musicExtensions.some(ext => name.toLowerCase().endsWith(ext));
             },
             openMusic: function (name) {
-                const fullPath = this.searchCond.prefix + name;
+                const fullPath = this.dir + name;
                 this.musicUrl = $$BASE_URL + 'stores/download?file=' + encodeURIComponent(fullPath);
                 this.openDetailDialog = true; // 打开弹窗
                 this.$nextTick(() => {
@@ -360,16 +367,23 @@
                     return this.loadDatasDo();
                 });
             },
-            loadDatasDo: function () {
+            loadDatasDo: function (argDir) {
                 if (this.loading) {
                     return vueAlert('加载中...');
                 }
+                if (argDir !== undefined) {
+                    this.dir = argDir;
+                }
+                // 先设置只读
+                this.isReadonly = true;
+                this.loadDirWritable();
+
                 this.loading = true;
                 this.dataList = [];
                 let startTime = new Date();
                 this.statusTxt = '';
 
-                let url = $$BASE_URL + 'stores/list?' + Qs.stringify(this.searchCond);
+                let url = $$BASE_URL + 'stores/list?dir=' + encodeURIComponent(this.dir);
                 return axios.get(url).then(response => {
                     this.loading = false;
                     let endTime = new Date();
@@ -381,13 +395,13 @@
                     if (response.data.code !== 0) {
                         if (response.data.code === 12002) {
                             // 无权限，返回根目录
-                            this.searchCond.prefix = '';
+                            this.dir = '';
                             this.loadDatasDo();
                         }
-                        return vueAlert(response.data.msg, 3000);
+                        return;// vueAlert(response.data.msg, 3000);
                     }
                     let pageData = response.data.data;
-                    if (this.searchCond.prefix !== '' && this.searchCond.prefix !== '/') {
+                    if (this.dir !== '' && this.dir !== '/') {
                         pageData.unshift({
                             name: PARENT_DIR,
                             dir: true,
@@ -403,11 +417,28 @@
                     // 更新 imageList
                     this.imageList = pageData.filter(item => this.isImage(item.name)).map(item => ({
                         name: item.name,
-                        url: $$BASE_URL + 'stores/download?file=' + encodeURIComponent(this.searchCond.prefix + item.name)
+                        url: $$BASE_URL + 'stores/download?file=' + encodeURIComponent(this.dir + item.name)
                     }));
 
                     this.statusTxt = this.dataList.length + '行，耗时:' + costTime + 'ms';
                 }).catch(error => this.ajaxError(error));
+            },
+            loadDirWritable: function () {
+                if (!this.dir)
+                    return;
+                // 判断当前目录是否可上传
+                let url = $$BASE_URL + 'stores/status?dir=' + encodeURIComponent(this.dir);
+                return axios.get(url).then(response => {
+                    if (response.data.code !== 0) {
+                        return vueAlert(response.data.msg);
+                    }
+                    const dirObj = response.data.data;
+                    if (dirObj) {
+                        this.isReadonly = dirObj.readonly;
+                    }
+                }).catch(error => {
+                });// this.ajaxError(error)
+
             },
             showDelete: function (row) {
                 this.deleteDialog = true;
@@ -454,7 +485,7 @@
                 return videoExtensions.some(ext => name.toLowerCase().endsWith(ext));
             },
             openVideo: function (name) {
-                const fullPath = this.searchCond.prefix + name;
+                const fullPath = this.dir + name;
                 this.videoUrl = $$BASE_URL + 'stores/download?file=' + encodeURIComponent(fullPath);
                 this.openVideoDialog = true;
 
@@ -504,7 +535,7 @@
                 return imageExtensions.some(ext => name.toLowerCase().endsWith(ext));
             },
             openImage: function (name) {
-                const fullPath = this.searchCond.prefix + name;
+                const fullPath = this.dir + name;
                 this.currentImageUrl = $$BASE_URL + 'stores/download?file=' + encodeURIComponent(fullPath);
                 this.currentImagePath = fullPath; // 设置当前图片路径
                 this.openImageDialog = true; // 打开图片弹窗

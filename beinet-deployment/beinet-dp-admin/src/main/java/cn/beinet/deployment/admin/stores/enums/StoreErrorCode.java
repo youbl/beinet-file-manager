@@ -11,6 +11,7 @@ public enum StoreErrorCode implements BaseErrorEnums {
     STORE_ERR_FILE_EXISTS("文件已存在", 3),
     STORE_ERR_FILE_NOT_EXISTS("文件不存在", 4),
     STORE_ERR_RANGE_INVALID("Range请求头格式错误", 5),
+    STORE_ERR_NOT_DIR("不是目录", 6),
     ;
     private final int errorCode;
     private final String errorMsg;

@@ -41,8 +41,14 @@ public class StoresController {
     }
 
     @GetMapping("stores/list")
-    public ResponseData<List<StoreInfo>> getList(@RequestParam(required = false) String prefix) {
-        var ret = storeService.getList(prefix);
+    public ResponseData<List<StoreInfo>> getList(@RequestParam(required = false) String dir) {
+        var ret = storeService.getList(dir);
+        return ResponseData.ok(ret);
+    }
+
+    @GetMapping("stores/status")
+    public ResponseData<StoreInfo> getStatus(@RequestParam String dir) {
+        var ret = storeService.getStatus(dir);
         return ResponseData.ok(ret);
     }
 

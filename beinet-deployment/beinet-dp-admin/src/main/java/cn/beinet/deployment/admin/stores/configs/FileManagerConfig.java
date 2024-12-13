@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -142,7 +143,9 @@ public class FileManagerConfig {
         List<StoreInfo> tmpReadonly = toStoreInfoList(readonlyDirStr, true);
         putInMap(storeInfos, tmpReadonly);
 
-        this.dir = storeInfos.values().stream().toList();
+        this.dir = storeInfos.values().stream()
+                .sorted((d1, d2) -> d1.getPath().compareToIgnoreCase(d2.getPath()))
+                .toList();
     }
 
     private static Map<String, String> readIni(String path) {
@@ -182,7 +185,7 @@ public class FileManagerConfig {
         // 按逗号分隔目录
         return java.util.Arrays.stream(dirStr.split(","))
                 .map(item -> convertToStoreInfo(item, readonly))
-                .filter(item -> !item.getName().isEmpty())
+                .filter(item -> !item.getName().isEmpty() && new File(item.getName()).isDirectory())
                 .toList();
     }
 
