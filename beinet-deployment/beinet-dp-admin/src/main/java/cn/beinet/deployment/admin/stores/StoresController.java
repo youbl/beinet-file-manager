@@ -3,7 +3,7 @@ package cn.beinet.deployment.admin.stores;
 import cn.beinet.core.base.commonDto.ResponseData;
 import cn.beinet.deployment.admin.stores.dtos.StoreInfo;
 import cn.beinet.deployment.admin.stores.services.StoreService;
-import cn.beinet.sdk.event.annotation.EventLog;
+import cn.beinet.sdk.event.EventUtils;
 import cn.beinet.sdk.event.enums.EventSubType;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,14 +32,16 @@ public class StoresController {
     private final StoreService storeService;
 
     @PostMapping("stores/uploadFile")
-    @EventLog(subType = EventSubType.FILE_UPLOAD)
-    public ResponseData<String> uploadFile(@RequestBody MultipartFile file,
-                                           @RequestParam String dir) {
+    //@EventLog(subType = EventSubType.FILE_UPLOAD)
+    public ResponseData<String> uploadFile(@RequestBody MultipartFile file, @RequestParam String dir) {
         if (file == null) {
             return ResponseData.fail(500, "未提交文件");
         }
 
+        log.info("准备上传:{} {}", dir, file.getOriginalFilename());
         String fullName = storeService.uploadFile(file, dir);
+        // EventLog注解会忽略file，导致日志无法记录实际上传结果，因此不使用注解，改自行代码上报
+        EventUtils.report(EventSubType.FILE_UPLOAD, fullName);
         return ResponseData.ok(fullName);
     }
 

@@ -1,7 +1,9 @@
 package cn.beinet.sdk.event;
 
+import cn.beinet.core.utils.SpringHelper;
 import cn.beinet.sdk.event.enums.EventSubType;
 import cn.beinet.sdk.event.service.EventFactory;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -13,16 +15,10 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class EventUtils {
-    // 单例
-    private static EventUtils instance;
 
     private final EventFactory factory;
-
-    public EventUtils(EventFactory eventFactory) {
-        instance = this;
-        this.factory = eventFactory;
-    }
 
     /**
      * 事件上报
@@ -30,9 +26,9 @@ public class EventUtils {
      * @param data 事件数据
      */
     public static void report(EventSubType subType, Object data) {
-        if (instance != null) {
-            instance.reportEvent(subType, data);
-        }
+        // 使用Spring的bean才能实现Async效果
+        EventUtils instance = SpringHelper.getBean(EventUtils.class);
+        instance.reportEvent(subType, data);
     }
 
     /**
@@ -44,6 +40,7 @@ public class EventUtils {
     public void reportEvent(EventSubType subType, Object data) {
         try {
             factory.reportEvent(subType, data);
+            log.info("{}事件已上报: {}", subType, data);
         } catch (Exception e) {
             log.error("事件上传出错:{} {}", subType, data, e);
         }
