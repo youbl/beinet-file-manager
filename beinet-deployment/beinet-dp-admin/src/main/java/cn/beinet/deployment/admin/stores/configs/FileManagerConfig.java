@@ -5,7 +5,6 @@ import cn.beinet.core.utils.FileHelper;
 import cn.beinet.deployment.admin.stores.dtos.StoreInfo;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -88,7 +87,6 @@ public class FileManagerConfig {
         return false;
     }
 
-    @Scheduled(fixedRate = 60000) // 每60秒（1分钟）执行一次
     public void init() {
         try {
             checkConfigFileChanged();
