@@ -45,6 +45,9 @@ public final class FileHelper {
      */
     @SneakyThrows
     public static String readFile(String filePath) {
+        if (filePath == null || filePath.isEmpty()) {
+            return "";
+        }
         byte[] encoded = Files.readAllBytes(Paths.get(filePath));
         return new String(encoded, StandardCharsets.UTF_8);
     }

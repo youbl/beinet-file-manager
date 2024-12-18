@@ -59,7 +59,7 @@ public class FileManagerConfig {
      * @return 是否允许读取
      */
     public boolean canReadDir(String usedDir) {
-        if (!enabled) {
+        if (!enabled || usedDir == null || usedDir.isEmpty()) {
             return false;
         }
         for (StoreInfo dir : getDir()) {
@@ -76,7 +76,7 @@ public class FileManagerConfig {
      * @return 是否允许写入
      */
     public boolean canWriteDir(String usedDir) {
-        if (!enabled) {
+        if (!enabled || usedDir == null || usedDir.isEmpty()) {
             return false;
         }
         for (StoreInfo dir : getDir()) {

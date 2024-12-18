@@ -81,7 +81,7 @@ public class StoreService {
      */
     public StoreInfo getStatus(String dir) {
         dir = FileHelper.clearDirName(dir);
-        if (!fileManagerConfig.canReadDir(dir)) {
+        if (dir.isEmpty() || !fileManagerConfig.canReadDir(dir)) {
             return null;
         }
         File dirFile = new File(dir);

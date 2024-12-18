@@ -31,6 +31,12 @@ import java.util.List;
 public class StoresController {
     private final StoreService storeService;
 
+    /**
+     * 上传文件到指定的目录下
+     * @param file 文件
+     * @param dir 目录
+     * @return 上传结果文件全路径
+     */
     @PostMapping("stores/uploadFile")
     //@EventLog(subType = EventSubType.FILE_UPLOAD)
     public ResponseData<String> uploadFile(@RequestBody MultipartFile file, @RequestParam String dir) {
@@ -45,18 +51,34 @@ public class StoresController {
         return ResponseData.ok(fullName);
     }
 
+    /**
+     * 获取指定目录的所有子目录和一级文件
+     * @param dir 目录，为空时返回配置的目录列表
+     * @return 所有子目录和一级文件
+     */
     @GetMapping("stores/list")
     public ResponseData<List<StoreInfo>> getList(@RequestParam(required = false) String dir) {
         var ret = storeService.getList(dir);
         return ResponseData.ok(ret);
     }
 
+    /**
+     * 获取指定目录的状态，如是否允许上传
+     * @param dir 目录
+     * @return 状态
+     */
     @GetMapping("stores/status")
     public ResponseData<StoreInfo> getStatus(@RequestParam String dir) {
         var ret = storeService.getStatus(dir);
         return ResponseData.ok(ret);
     }
 
+    /**
+     * 下载指定文件
+     * @param file 要下载的全路径
+     * @param response 响应上下文
+     * @param request 请求上下文
+     */
     @GetMapping("stores/download")
     public void download(@RequestParam String file, HttpServletResponse response, HttpServletRequest request) {
         String rangeHeader = request.getHeader("Range");
