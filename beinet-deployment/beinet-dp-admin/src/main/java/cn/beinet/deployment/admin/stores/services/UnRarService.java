@@ -87,30 +87,45 @@ public class UnRarService {
         // 解压 RAR 文件到指定目录, x指解压 -o+指覆盖 -p解压密码
         String command = getRarExe() + " x -o+ -p" + pwd +
                 " \"" + rarFile.getAbsolutePath() + "\" \"" + outputDir.getAbsolutePath() + "\\\"";
+
         StringBuilder output = new StringBuilder("Executing command: ");
         output.append(command).append(System.lineSeparator());
+        StringBuilder errorOutput = new StringBuilder();
+
+        Charset gbk = Charset.forName("GBK");
+        Process processUse = null;
         try {
-            Process process = Runtime.getRuntime().exec(command);
+            final Process process = Runtime.getRuntime().exec(command);
+            processUse = process;
+
+            // 读取命令行输出和错误输出，都必须放在waitFor前面，否则会因为命令行输出的缓冲区满，导致程序卡住，假死
+            new Thread(() -> {
+                // 读取命令行输出，指定字符编码为 UTF-8
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), gbk))) {
+                    String line;
+                    output.append("*****Command output*****").append(System.lineSeparator());
+                    while ((line = reader.readLine()) != null) {
+                        output.append(line).append(System.lineSeparator());
+                    }
+                } catch (IOException e) {
+                    log.error("解压文件失败: {}", output, e);
+                }
+            }).start();
+            new Thread(() -> {
+                // 读取错误流
+                try (BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream(), gbk))) {
+                    String line;
+                    while ((line = errorReader.readLine()) != null) {
+                        errorOutput.append(line).append(System.lineSeparator());
+                    }
+                } catch (IOException e) {
+                    log.error("解压文件失败: {}", errorOutput, e);
+                }
+            }).start();
             process.waitFor(); // 等待解压完成
 
-            // 读取命令行输出，指定字符编码为 UTF-8
-            Charset gbk = Charset.forName("GBK");
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), gbk))) {
-                String line;
-                output.append("*****Command output*****").append(System.lineSeparator());
-                while ((line = reader.readLine()) != null) {
-                    output.append(line).append(System.lineSeparator());
-                }
-            }
+            Thread.sleep(2000);
 
-            // 读取错误流
-            StringBuilder errorOutput = new StringBuilder();
-            try (BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream(), gbk))) {
-                String line;
-                while ((line = errorReader.readLine()) != null) {
-                    errorOutput.append(line).append(System.lineSeparator());
-                }
-            }
             output.append(System.lineSeparator())
                     .append("exit code: ")
                     .append(process.exitValue())
@@ -127,6 +142,10 @@ public class UnRarService {
         } catch (IOException | InterruptedException e) {
             log.error("解压文件失败: {}", output, e);
             return false;
+        } finally {
+            if (processUse != null) {
+                processUse.destroy();
+            }
         }
     }
 
