@@ -7,6 +7,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 /**
  * 新类
  * @author youbl
@@ -24,9 +27,9 @@ public class StoreJobs {
         fileManagerConfig.init();
     }
 
-    // 每60秒（1分钟）执行一次磁盘分区文件读写，避免磁盘睡着
+    // 每600秒（10分钟）执行一次磁盘分区文件读写，避免磁盘睡着
     // 设置Windows电源里的睡眠时间为0好像没效果
-    @Scheduled(fixedRate = 60000)
+    @Scheduled(fixedRate = 600000)
     public void activeDisks() {
         String[] partitions = new String[]{
                 "E:/",
@@ -42,7 +45,7 @@ public class StoreJobs {
 
     private void activeDisksDo(String partition) {
         try {
-            String ts = System.currentTimeMillis() + System.lineSeparator();
+            String ts = new SimpleDateFormat("yyyyMMdd HHmmss.SSS").format(new Date()) + System.lineSeparator();
             String file = partition + "beinet.txt";
             FileHelper.saveFile(file, ts, false);
         } catch (Exception e) {

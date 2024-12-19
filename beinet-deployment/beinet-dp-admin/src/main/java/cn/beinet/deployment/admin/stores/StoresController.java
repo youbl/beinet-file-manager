@@ -3,6 +3,7 @@ package cn.beinet.deployment.admin.stores;
 import cn.beinet.core.base.commonDto.ResponseData;
 import cn.beinet.deployment.admin.stores.dtos.StoreInfo;
 import cn.beinet.deployment.admin.stores.services.StoreService;
+import cn.beinet.deployment.admin.stores.services.UnRarService;
 import cn.beinet.sdk.event.EventUtils;
 import cn.beinet.sdk.event.enums.EventSubType;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -27,9 +29,10 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-@Tag(name = "files", description = "文件上传接口类")
+@Tag(name = "files", description = "文件管理接口类")
 public class StoresController {
     private final StoreService storeService;
+    private final UnRarService unRarService;
 
     /**
      * 上传文件到指定的目录下
@@ -89,5 +92,33 @@ public class StoresController {
             // 普通下载
             storeService.download(file, response);
         }
+    }
+
+    // 一次性工具，用于某个目录下的所有rar文件解压
+    @GetMapping("stores/extractRar")
+    public ResponseData<String> extractRar(@RequestParam String dir, @RequestParam String pwd) {
+        File directory = new File(dir);
+        if (!directory.exists() || !directory.isDirectory()) {
+            return ResponseData.ok("目录不存在:" + dir);
+        }
+
+        if (!unRarService.isCompleted()) {
+            // 上次解压任务还没结束
+            return getUnzipStatus();
+        }
+
+        unRarService.unrar(dir, pwd);
+        return ResponseData.ok("解压任务已启动，请调用接口检查结果");
+    }
+
+    // 查询解压状态
+    @GetMapping("stores/extractRarStatus")
+    public ResponseData<String> getUnzipStatus() {
+        String status = (unRarService.isCompleted()) ? "结束" : "进行中";
+        String ret = "解压" + status +
+                ": 成功 " + unRarService.getSuccessCount() +
+                " 个, 失败 " + unRarService.getFailureCount() +
+                " 个，耗时 " + unRarService.costTime() + " 毫秒";
+        return ResponseData.ok(ret);
     }
 }
