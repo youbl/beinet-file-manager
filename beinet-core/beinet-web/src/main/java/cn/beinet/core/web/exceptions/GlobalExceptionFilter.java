@@ -3,6 +3,9 @@ package cn.beinet.core.web.exceptions;
 import cn.beinet.core.base.commonDto.ResponseData;
 import cn.beinet.core.base.exceptions.BaseException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -17,13 +20,18 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Slf4j
 public class GlobalExceptionFilter {
     @ExceptionHandler(value = Exception.class)
-    public ResponseData exceptionHandler(Exception e) {
+    public ResponseEntity<ResponseData> exceptionHandler(Exception e) {
         //System.out.println("未知异常！原因是:" + e);
         log.error("全局异常: {}", e.getMessage());
 
         int errCode = getErrorCode(e);
         String msg = getMessage(e);
-        return ResponseData.fail(errCode, msg);
+
+        // 使用 ResponseEntity 设置内容类型
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(ResponseData.fail(errCode, msg));
     }
 
     private int getErrorCode(Exception e) {

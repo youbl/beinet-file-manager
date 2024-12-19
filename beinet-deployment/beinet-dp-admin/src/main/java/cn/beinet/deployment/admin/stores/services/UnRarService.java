@@ -87,13 +87,13 @@ public class UnRarService {
         // 解压 RAR 文件到指定目录, x指解压 -o+指覆盖 -p解压密码
         String command = getRarExe() + " x -o+ -p" + pwd +
                 " \"" + rarFile.getAbsolutePath() + "\" \"" + outputDir.getAbsolutePath() + "\\\"";
+        StringBuilder output = new StringBuilder("Executing command: ");
+        output.append(command).append(System.lineSeparator());
         try {
             Process process = Runtime.getRuntime().exec(command);
             process.waitFor(); // 等待解压完成
 
             // 读取命令行输出，指定字符编码为 UTF-8
-            StringBuilder output = new StringBuilder("Executing command: ");
-            output.append(command).append(System.lineSeparator());
             Charset gbk = Charset.forName("GBK");
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), gbk))) {
                 String line;
@@ -125,7 +125,7 @@ public class UnRarService {
 
             return (process.exitValue() == 0);
         } catch (IOException | InterruptedException e) {
-            log.error("解压文件失败: {}", command, e);
+            log.error("解压文件失败: {}", output, e);
             return false;
         }
     }
