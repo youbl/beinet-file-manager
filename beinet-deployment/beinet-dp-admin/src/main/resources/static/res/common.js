@@ -1,4 +1,5 @@
 const $$BASE_URL = '/';// + location.pathname.split('/')[1] + '/'; // '/ops/';
+const $$HOST = location.protocol + '//' + location.host;
 
 /**
  * 把对象转换为字符串，并去空格返回

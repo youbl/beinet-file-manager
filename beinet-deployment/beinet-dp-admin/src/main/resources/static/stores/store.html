@@ -12,7 +12,7 @@
     <script src="../res/qs.min.js" type="text/javascript"></script>
 
     <link href="../res/elemeIndex.css" rel="stylesheet">
-    <link href="https://vjs.zencdn.net/7.11.4/video-js.css" rel="stylesheet" />
+    <link href="https://vjs.zencdn.net/7.11.4/video-js.css" rel="stylesheet"/>
     <script src="https://vjs.zencdn.net/7.11.4/video.min.js"></script>
     <style>
         body {
@@ -169,11 +169,14 @@
                 </div>
             </template>
         </el-table-column>
-        <el-table-column label="" width="55">
+        <el-table-column label="" width="75">
             <template slot-scope="scope">
-                <div>
+                <div style="text-align: center">
                     <div style="padding-bottom: 5px;">
                         <a v-if="!scope.row.dir" href="#0" @click="openFile(scope.row.name)">打开</a>
+                    </div>
+                    <div style="padding-bottom: 5px;">
+                        <a v-if="!scope.row.dir" href="#0" @click="copyLink(scope.row.name)">复制链接</a>
                     </div>
                     <div>
                         <a style="display: none" v-if="!scope.row.dir" href="#0" @click="showDelete(scope.row)">删除</a>
@@ -215,7 +218,7 @@
     <el-dialog :visible.sync="openVideoDialog" width="80%" :fullscreen="false">
         <div style="display: flex; justify-content: center; align-items: center;">
             <video id="videoPlayer" class="video-js" controls preload="auto" width="640" height="264">
-                <source :src="videoUrl" type="video/mp4" />
+                <source :src="videoUrl" type="video/mp4"/>
                 <p class="vjs-no-js">
                     To view this video please enable JavaScript, and consider upgrading to a web browser that
                     <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>
@@ -331,6 +334,12 @@
                 const fullPath = this.dir + filename;
                 let url = $$BASE_URL + 'stores/download?file=' + encodeURIComponent(fullPath);
                 window.open(url);
+            },
+            copyLink: function (filename) {
+                const fullPath = this.dir + filename;
+                let url = $$HOST + $$BASE_URL + 'stores/download?file=' + encodeURIComponent(fullPath);
+                copyStr(url);
+                vueAlert('复制成功', 3000);
             },
             isMusic: function (name) {
                 const musicExtensions = ['.mp3', '.wav', '.ogg', '.flac', '.aac']; // 音乐文件扩展名
@@ -490,7 +499,7 @@
 
                 this.$nextTick(() => {
                     const player = videojs('videoPlayer');
-                    player.src({ type: 'video/mp4', src: this.videoUrl });
+                    player.src({type: 'video/mp4', src: this.videoUrl});
                     player.play().catch(error => {
                         console.error('视频播放失败:', error);
                     });
