@@ -29,7 +29,7 @@ public class GlobalExceptionFilter {
 
         // 使用 ResponseEntity 设置内容类型
         return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .status(HttpStatus.OK) // 抛异常会导致前端走异常流程
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(ResponseData.fail(errCode, msg));
     }

@@ -7,12 +7,17 @@ import cn.beinet.deployment.admin.stores.services.StoreService;
 import cn.beinet.deployment.admin.stores.services.UnRarService;
 import cn.beinet.sdk.event.EventUtils;
 import cn.beinet.sdk.event.enums.EventSubType;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -99,6 +104,7 @@ public class StoresController {
 
     // 一次性工具，用于某个目录下的所有rar文件解压
     @GetMapping("stores/extractRar")
+    @Hidden
     public ResponseData<String> extractRar(@RequestParam String dir, @RequestParam String pwd) {
         File directory = new File(dir);
         if (!directory.exists() || !directory.isDirectory()) {
@@ -116,6 +122,7 @@ public class StoresController {
 
     // 查询上面接口的解压状态
     @GetMapping("stores/extractRarStatus")
+    @Hidden
     public ResponseData<String> getUnRarStatus() {
         String status = (unRarService.isCompleted()) ? "*******结束*******" : "进行中";
         String ret = "解压" + status +
@@ -127,6 +134,7 @@ public class StoresController {
 
     // 一次性工具，用于目录提级，如果某个目录下有且只有一个子目录，且没有文件，则把子目录里的内容提取到上级目录，并删除该子目录
     @GetMapping("stores/singleDir")
+    @Hidden
     public ResponseData<String> singleDir(@RequestParam String dir) {
         File directory = new File(dir);
         if (!directory.exists() || !directory.isDirectory()) {
@@ -144,6 +152,7 @@ public class StoresController {
 
     // 查询上面接口的解压状态
     @GetMapping("stores/singleDirStatus")
+    @Hidden
     public ResponseData<String> singleDirStatus() {
         String status = (singleDirService.isCompleted()) ? "*******结束*******" : "进行中";
         String ret = "扫描" + status +
