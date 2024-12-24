@@ -81,7 +81,9 @@ public class SingleDirService {
                 Files.move(file.toPath(), targetPath);
             }
             // 移完了，重命名一下
-            sourceDir.renameTo(new File(sourceDir.getAbsolutePath() + "-zeroFiles"));
+            String newDirName = sourceDir.getAbsolutePath() + "-zeroFiles";
+            sourceDir.renameTo(new File(newDirName));
+            log.info("*** {}", newDirName);
             successCount.incrementAndGet();
         } catch (Exception e) {
             log.error("移动失败: {}", sourceDir, e);
