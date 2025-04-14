@@ -2,7 +2,7 @@ package cn.beinet.deployment.admin.stores.services;
 
 import cn.beinet.core.base.exceptions.BaseException;
 import cn.beinet.core.utils.FileHelper;
-import cn.beinet.deployment.admin.stores.configs.FileManagerConfig;
+import cn.beinet.deployment.admin.stores.configs.RealConfigVar;
 import cn.beinet.deployment.admin.stores.dtos.StoreInfo;
 import cn.beinet.deployment.admin.stores.enums.StoreErrorCode;
 import jakarta.servlet.ServletOutputStream;
@@ -28,7 +28,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class StoreService {
-    private final FileManagerConfig fileManagerConfig;
 
     /**
      * 获取指定目录下的一级子目录和文件列表
@@ -81,7 +80,7 @@ public class StoreService {
      */
     public StoreInfo getStatus(String dir) {
         dir = FileHelper.clearDirName(dir);
-        if (dir.isEmpty() || !fileManagerConfig.canReadDir(dir)) {
+        if (dir.isEmpty() || !RealConfigVar.canReadDir(dir)) {
             return null;
         }
         File dirFile = new File(dir);
@@ -105,7 +104,7 @@ public class StoreService {
      */
     public String uploadFile(MultipartFile file, String dir) {
         dir = FileHelper.clearDirName(dir);
-        if (!fileManagerConfig.canWriteDir(dir)) {
+        if (!RealConfigVar.canWriteDir(dir)) {
             throw BaseException.of(StoreErrorCode.STORE_ERR_NO_PERMISSION, "不允许写入的目录:" + dir);
         }
 
@@ -234,18 +233,18 @@ public class StoreService {
 
     private boolean isWritableDir(String dir) {
         String checkedDir = FileHelper.clearDirName(dir);
-        return (fileManagerConfig.canWriteDir(checkedDir));
+        return (RealConfigVar.canWriteDir(checkedDir));
     }
 
     private File getReadableDir(String dir) {
         dir = FileHelper.clearDirName(dir);
-        if (!fileManagerConfig.canReadDir(dir)) {
+        if (!RealConfigVar.canReadDir(dir)) {
             throw BaseException.of(StoreErrorCode.STORE_ERR_NO_PERMISSION, "不允许访问的目录:" + dir);
         }
         return new File(dir);
     }
 
     private List<StoreInfo> getConfigDir() {
-        return fileManagerConfig.getDir();
+        return RealConfigVar.getAllDir();
     }
 }

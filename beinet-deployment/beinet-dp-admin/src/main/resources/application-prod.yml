@@ -1,4 +1,0 @@
-store:
-  jobs:
-    enabled: true
-    active-disks: "e,f,g,h,i" # 要保持激活的盘符列表，半角逗号分隔

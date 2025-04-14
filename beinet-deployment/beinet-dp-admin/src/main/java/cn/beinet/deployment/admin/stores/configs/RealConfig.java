@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 @Component
 @Slf4j
-public abstract class RealConfig {
+public final class RealConfig {
     // 配置文件所在路径
     private static final String CONFIG_FILE = SystemConst.getBaseDir() + "config.ini";
     // 记录配置文件最后修改时间，用于避免频繁重复加载
@@ -68,7 +68,7 @@ public abstract class RealConfig {
         return Integer.parseInt(ret);
     }
 
-    
+
     // 每60秒（1分钟）执行一次配置刷新
     @Scheduled(fixedRate = 60000)
     public void refreshConfigs() {
@@ -100,7 +100,7 @@ public abstract class RealConfig {
 
         // 更新最后修改时间
         lastModifiedTime.set(currentModifiedTime);
-        log.info("配置文件重新初始化完成");
+        log.info("配置文件重新初始化完成: {}", configFile);
     }
 
     private static Map<String, String> readIni(String path) {
