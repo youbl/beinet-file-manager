@@ -2,15 +2,11 @@ package cn.beinet.deployment.admin.stores.configs;
 
 import cn.beinet.core.base.configs.SystemConst;
 import cn.beinet.core.utils.FileHelper;
-import cn.beinet.deployment.admin.stores.dtos.StoreInfo;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -30,23 +26,60 @@ public abstract class RealConfig {
         init();
     }
 
+    /**
+     * 从实时配置里读取指定key的值
+     * @param key key
+     * @return val
+     */
+    public static String get(String key) {
+        return get(key, "");
+    }
+
+    /**
+     * 从实时配置里读取指定key的值
+     * @param key key
+     * @param defaultValue val为null时返回的默认值
+     * @return val
+     */
+    public static String get(String key, String defaultValue) {
+        String ret = configMap.get(key);
+        return ret == null ? defaultValue : ret;
+    }
+
+    /**
+     * 获取实时配置Integer值
+     * @param key key
+     * @return val
+     */
+    public static Integer getInt(String key) {
+        return getInt(key, null);
+    }
+
+    /**
+     * 获取实时配置Integer值，不存在时返回指定的默认值
+     * @param key key
+     * @return val
+     */
+    public static Integer getInt(String key, Integer defaultValue) {
+        var ret = get(key);
+        if (ret.isEmpty()) {
+            return defaultValue;
+        }
+        return Integer.parseInt(ret);
+    }
+
+    
     // 每60秒（1分钟）执行一次配置刷新
     @Scheduled(fixedRate = 60000)
     public void refreshConfigs() {
-        init();
-    }
-
-
-    public void init() {
         try {
-            checkConfigFileChanged();
+            init();
         } catch (Exception e) {
             log.error("定时检查配置文件发生错误:", e);
         }
     }
 
-    @SneakyThrows
-    private void checkConfigFileChanged() {
+    private void init() {
         String path = CONFIG_FILE;
 
         // 检查配置文件是否存在
@@ -63,16 +96,11 @@ public abstract class RealConfig {
         }
 
         // 从文件读取配置，并存入当前类的字段
-        initFromIni(path);
+        configMap = readIni(path);
 
         // 更新最后修改时间
         lastModifiedTime.set(currentModifiedTime);
         log.info("配置文件重新初始化完成");
-    }
-
-
-    private void initFromIni(String path) {
-        configMap = readIni(path);
     }
 
     private static Map<String, String> readIni(String path) {
@@ -100,30 +128,4 @@ public abstract class RealConfig {
         }
         return map;
     }
-
-    // 把逗号分隔的目录列表，转换为StoreInfo数组返回
-    private List<StoreInfo> toStoreInfoList(String dirStr, boolean readonly) {
-        if (dirStr == null || dirStr.isEmpty()) {
-            return null;
-        }
-        dirStr = dirStr.replace('\\', '/')
-                .replace("//", "/");
-
-        // 按逗号分隔目录
-        return java.util.Arrays.stream(dirStr.split(","))
-                .map(item -> convertToStoreInfo(item, readonly))
-                .filter(item -> !item.getName().isEmpty() && new File(item.getName()).isDirectory())
-                .toList();
-    }
-
-    private void putInMap(Map<String, StoreInfo> map, List<StoreInfo> configs) {
-        if (configs != null) {
-            for (StoreInfo storeInfo : configs) {
-                if (!map.containsKey(storeInfo.getName())) {
-                    map.put(storeInfo.getName(), storeInfo);
-                }
-            }
-        }
-    }
-
 }
