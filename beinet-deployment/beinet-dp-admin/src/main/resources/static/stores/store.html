@@ -12,8 +12,10 @@
     <script src="../res/qs.min.js" type="text/javascript"></script>
 
     <link href="../res/elemeIndex.css" rel="stylesheet">
-    <link href="https://vjs.zencdn.net/7.11.4/video-js.css" rel="stylesheet"/>
-    <script src="https://vjs.zencdn.net/7.11.4/video.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/dplayer@1.27.1/dist/DPlayer.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/dplayer@1.27.1/dist/DPlayer.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.4.12/dist/hls.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flv.js@1.6.2/dist/flv.min.js"></script>
     <style>
         body {
             background-color: #f5f5f5; /* 淡雅背景色 */
@@ -216,15 +218,7 @@
 
     <!-- 显示播放的视频 -->
     <el-dialog :visible.sync="openVideoDialog" width="80%" :fullscreen="false">
-        <div style="display: flex; justify-content: center; align-items: center;">
-            <video id="videoPlayer" class="video-js" controls preload="auto" width="640" height="264">
-                <source :src="videoUrl" type="video/mp4"/>
-                <p class="vjs-no-js">
-                    To view this video please enable JavaScript, and consider upgrading to a web browser that
-                    <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>
-                </p>
-            </video>
-        </div>
+        <div id="dplayer" style="width: 100%;"></div>
         <div class="dialog-footer" slot="footer">
             <el-button size="mini" @click="closeVideoDialog">关闭</el-button>
         </div>
@@ -293,6 +287,7 @@
                 dirCount: 0, // 目录数量
                 fileCount: 0, // 文件数量
                 totalSize: 0, // 文件总大小
+                dp: null,
             }
         },
         mounted: function () {
@@ -498,19 +493,39 @@
                 this.openVideoDialog = true;
 
                 this.$nextTick(() => {
-                    const player = videojs('videoPlayer');
-                    player.src({type: 'video/mp4', src: this.videoUrl});
-                    player.play().catch(error => {
-                        console.error('视频播放失败:', error);
+                    if (this.dp) {
+                        this.dp.destroy();
+                    }
+                    this.dp = new DPlayer({
+                        container: document.getElementById('dplayer'),
+                        video: {
+                            url: this.videoUrl,
+                            type: 'auto',
+                        },
+                        autoplay: true,
+                        theme: '#409EFF',
+                        lang: 'zh-cn',
+                        screenshot: true,
+                        hotkey: true,
+                        preload: 'auto',
+                        volume: 0.7,
+                        playbackSpeed: [0.5, 0.75, 1, 1.25, 1.5, 2],
+                        contextmenu: [
+                            {
+                                text: '复制视频地址',
+                                link: this.videoUrl
+                            }
+                        ]
                     });
                 });
             },
             closeVideoDialog: function () {
-                const player = videojs('videoPlayer');
-                player.pause();
-                player.currentTime(0);
-                player.src({}); // 清除视频源
-                this.openVideoDialog = false; // 关闭弹窗
+                if (this.dp) {
+                    this.dp.pause();
+                    this.dp.destroy();
+                    this.dp = null;
+                }
+                this.openVideoDialog = false;
             },
             isImage: function (name) {
                 const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp']; // 图片文件扩展名

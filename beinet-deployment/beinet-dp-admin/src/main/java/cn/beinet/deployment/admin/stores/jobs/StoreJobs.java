@@ -4,6 +4,8 @@ import cn.beinet.core.utils.FileHelper;
 import cn.beinet.deployment.admin.stores.configs.FileManagerConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -18,14 +20,12 @@ import java.util.Date;
 @Component
 @RequiredArgsConstructor
 @Slf4j
+@ConditionalOnProperty(prefix = "store.jobs", name = "enabled", havingValue = "true", matchIfMissing = false)
 public class StoreJobs {
     private final FileManagerConfig fileManagerConfig;
 
-    // 每60秒（1分钟）执行一次配置刷新
-    @Scheduled(fixedRate = 60000)
-    public void refreshConfigs() {
-        fileManagerConfig.init();
-    }
+    @Value("${store.jobs.active-disks}")
+    private String activeDisks;
 
     // 每600秒（10分钟）执行一次磁盘分区文件读写，避免磁盘睡着
     // 设置Windows电源里的睡眠时间为0好像没效果

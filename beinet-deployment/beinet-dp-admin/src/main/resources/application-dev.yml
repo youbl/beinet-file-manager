@@ -1,0 +1,4 @@
+store:
+  jobs:
+    enabled: true
+    active-disks: d
