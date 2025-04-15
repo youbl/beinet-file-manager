@@ -9,12 +9,14 @@ import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -27,6 +29,7 @@ import java.util.List;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class StoreService {
 
     /**
@@ -187,9 +190,9 @@ public class StoreService {
         }
 
         // 发送指定范围的文件内容
-        try (FileInputStream in = new FileInputStream(fileToDownload)) {
+        try (FileInputStream in = new FileInputStream(fileToDownload);
+             ServletOutputStream out = response.getOutputStream()) {
             in.skip(start);
-            ServletOutputStream out = response.getOutputStream();
             byte[] buffer = new byte[8192];
             long remaining = contentLength;
             int length;
@@ -199,6 +202,9 @@ public class StoreService {
                 remaining -= length;
             }
             out.flush();
+        } catch (IOException e) {
+            // 记录异常信息
+            log.error("文件下载失败: {}", e.getMessage());
         }
     }
 
@@ -228,7 +234,9 @@ public class StoreService {
                 || fileName.endsWith(".ogg")
                 || fileName.endsWith(".mov")
                 || fileName.endsWith(".avi")
-                || fileName.endsWith(".mkv");
+                || fileName.endsWith(".mkv")
+                || fileName.endsWith(".rm")
+                || fileName.endsWith(".rmvb");
     }
 
     private boolean isWritableDir(String dir) {

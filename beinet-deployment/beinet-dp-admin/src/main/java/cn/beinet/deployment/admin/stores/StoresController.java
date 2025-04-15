@@ -92,13 +92,17 @@ public class StoresController {
      */
     @GetMapping("stores/download")
     public void download(@RequestParam String file, HttpServletResponse response, HttpServletRequest request) {
-        String rangeHeader = request.getHeader("Range");
-        if (rangeHeader != null) {
-            // 存在Range头，说明是分片请求
-            storeService.downloadWithRange(file, response, rangeHeader);
-        } else {
-            // 普通下载
-            storeService.download(file, response);
+        try {
+            String rangeHeader = request.getHeader("Range");
+            if (rangeHeader != null) {
+                // 存在Range头，说明是分片请求
+                storeService.downloadWithRange(file, response, rangeHeader);
+            } else {
+                // 普通下载
+                storeService.download(file, response);
+            }
+        } catch (Exception e) {
+            log.error("{} 下载失败", file, e);
         }
     }
 
