@@ -2,9 +2,12 @@ package cn.beinet.deployment.admin.stores.configs;
 
 import cn.beinet.core.base.configs.SystemConst;
 import cn.beinet.core.utils.FileHelper;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,14 +20,12 @@ import java.util.concurrent.atomic.AtomicLong;
 @Slf4j
 public final class RealConfig {
     // 配置文件所在路径
-    private static final String CONFIG_FILE = SystemConst.getBaseDir() + "config.ini";
+    @Value("${beinet.config.path:}")
+    private String configFilePath;
+
     // 记录配置文件最后修改时间，用于避免频繁重复加载
     private final AtomicLong lastModifiedTime = new AtomicLong(0);
     private static Map<String, String> configMap = new HashMap<>();
-
-    public RealConfig() {
-        init();
-    }
 
     /**
      * 从实时配置里读取指定key的值
@@ -68,6 +69,10 @@ public final class RealConfig {
         return Integer.parseInt(ret);
     }
 
+    @PostConstruct
+    void beanInit() {
+        init();
+    }
 
     // 每60秒（1分钟）执行一次配置刷新
     @Scheduled(fixedRate = 60000)
@@ -80,7 +85,10 @@ public final class RealConfig {
     }
 
     private void init() {
-        String path = CONFIG_FILE;
+        String path = configFilePath;
+        if (!StringUtils.hasText(path)) {
+            path = SystemConst.getBaseDir() + "config.ini";
+        }
 
         // 检查配置文件是否存在
         java.io.File configFile = new java.io.File(path);
