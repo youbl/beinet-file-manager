@@ -52,6 +52,10 @@
             <groupId>cn.beinet</groupId>
             <artifactId>beinet-event-sdk</artifactId>
         </dependency>
+        <dependency>
+            <groupId>cn.beinet</groupId>
+            <artifactId>beinet-aliyun</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

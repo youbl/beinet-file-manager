@@ -19,27 +19,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
-import static cn.beinet.core.web.context.ContextConstants.HEADER_API_ID;
 import static cn.beinet.core.web.context.ContextConstants.HEADER_APPLICATION;
-import static cn.beinet.core.web.context.ContextConstants.HEADER_IS_BOSS;
-import static cn.beinet.core.web.context.ContextConstants.HEADER_IS_DEVOPS;
-import static cn.beinet.core.web.context.ContextConstants.HEADER_LANGUAGE;
-import static cn.beinet.core.web.context.ContextConstants.HEADER_MACHINE_ID;
-import static cn.beinet.core.web.context.ContextConstants.HEADER_MACHINE_NAME;
-import static cn.beinet.core.web.context.ContextConstants.HEADER_MEMBER_ID;
-import static cn.beinet.core.web.context.ContextConstants.HEADER_MEMBER_NICKNAME;
-import static cn.beinet.core.web.context.ContextConstants.HEADER_MEMBER_ROLE;
-import static cn.beinet.core.web.context.ContextConstants.HEADER_OS;
 import static cn.beinet.core.web.context.ContextConstants.HEADER_PREFIX;
 import static cn.beinet.core.web.context.ContextConstants.HEADER_PREFIX_ACCEPT;
 import static cn.beinet.core.web.context.ContextConstants.HEADER_PRODUCT;
 import static cn.beinet.core.web.context.ContextConstants.HEADER_REQUEST_TIME;
-import static cn.beinet.core.web.context.ContextConstants.HEADER_SOURCE;
-import static cn.beinet.core.web.context.ContextConstants.HEADER_STARTUP_TIME;
-import static cn.beinet.core.web.context.ContextConstants.HEADER_TENANT_ID;
-import static cn.beinet.core.web.context.ContextConstants.HEADER_USER_EMAIL;
 import static cn.beinet.core.web.context.ContextConstants.HEADER_USER_ID;
-import static cn.beinet.core.web.context.ContextConstants.HEADER_VERSION;
 import static cn.beinet.core.web.context.ContextConstants.HEADER_X_TRACE_ID;
 
 
@@ -48,111 +33,45 @@ public class ContextUtils {
 
     public static final String DEFAULT_PRODUCT = "beinet";
 
-    public static String getApiId() {
-        return getHeader(HEADER_API_ID);
-    }
-
-    public static Long getMemberId() {
-        return getLongHeader(HEADER_MEMBER_ID);
-    }
-
-    public static String getMemberRole() {
-        return getHeader(HEADER_MEMBER_ROLE);
-    }
-
-    public static String getMemberNickname() {
-        return getHeader(HEADER_MEMBER_NICKNAME);
-    }
-
-    public static void setMemberId(Long memberId) {
-        setAttribute(HEADER_MEMBER_ID, memberId.toString());
-    }
-
+    /**
+     * 从header里获取当前登录用户的用户id（前端写入）
+     * @return 用户id
+     */
     public static Long getUserId() {
         return getLongHeader(HEADER_USER_ID);
     }
 
+    /**
+     * 从header里获取当前访问的产品名称（前端写入），无数据时返回默认产品名
+     * @return 产品名称
+     */
     public static String getProduct() {
         String product = getHeader(HEADER_PRODUCT);
         return StringUtils.hasLength(product) ? product : DEFAULT_PRODUCT;
     }
 
-    public static void setProduct(String product) {
-        setAttribute(HEADER_PRODUCT, product);
-    }
-
+    /**
+     * 设置用户id到当前请求上下文属性里
+     */
     public static void setUserId(Long userId) {
         MDC.put("userId", userId.toString());
         setAttribute(HEADER_USER_ID, userId.toString());
     }
 
-    public static String getUserEmail() {
-        return getHeader(HEADER_USER_EMAIL);
-    }
-
-    public static void setUserEmail(String userEmail) {
-        setAttribute(HEADER_USER_EMAIL, userEmail);
-    }
-
-    public static Long getTenantId() {
-        return getLongHeader(HEADER_TENANT_ID);
-    }
-
-    public static void setIsBoss(Long isBoss) {
-        setAttribute(HEADER_IS_BOSS, isBoss.toString());
-    }
-
-    public static void setTenantId(Long tenantId) {
-        setAttribute(HEADER_TENANT_ID, tenantId.toString());
-    }
-
-    public static Boolean getIsBoss() {
-        String isBoss = getHeader(HEADER_IS_BOSS);
-        return "0".equals(isBoss);
-    }
-
-    public static Boolean getIsDevops() {
-        String isDevops = getHeader(HEADER_IS_DEVOPS);
-        return "true".equals(isDevops);
-    }
-
+    /**
+     * 从header里获取当前访问的跟踪id（前端写入）
+     * @return 跟踪id
+     */
     public static String getTraceId() {
         return getHeader(HEADER_X_TRACE_ID);
     }
 
+    /**
+     * 设置跟踪id到当前请求上下文属性里
+     */
     public static void setTraceId(String traceId) {
         MDC.put("traceId", traceId);
         setAttribute(HEADER_X_TRACE_ID, traceId);
-    }
-
-    public static String getMachineId() {
-        return getHeader(HEADER_MACHINE_ID);
-    }
-
-    public static String getMachineName() {
-        return getHeader(HEADER_MACHINE_NAME);
-    }
-
-    public static String getVersion() {
-        return getHeader(HEADER_VERSION);
-    }
-
-    public static String getLanguage() {
-        var et = getHeader(HEADER_LANGUAGE);
-        return StringUtils.hasLength(et) ? et : "en-US";
-    }
-
-    public static String getOS() {
-        return getHeader(HEADER_OS);
-    }
-
-    public static String getSource() {
-        String source = getHeader(HEADER_SOURCE);
-        return StringUtils.hasLength(source) ? source : getOS();
-    }
-
-    public static String getStartupTime() {
-        return getHeader(HEADER_STARTUP_TIME);
     }
 
     /**
@@ -326,6 +245,11 @@ public class ContextUtils {
                         key.equalsIgnoreCase(HEADER_PRODUCT));
     }
 
+    /**
+     * 从请求上下文中获取指定的cookie值
+     * @param name cookie名
+     * @return cookie值
+     */
     public static String getCookie(String name) {
         if (!StringUtils.hasLength(name))
             return "";
@@ -381,6 +305,11 @@ public class ContextUtils {
 //        }
     }
 
+    /**
+     * 从请求header里获取Long类型值
+     * @param key header key
+     * @return header val
+     */
     public static Long getLongHeader(String key) {
         String value = getHeader(key);
         if (value != null) {

@@ -16,7 +16,8 @@ swagger地址：
 │   ├─ beinet-tenant  -- 租户服务
 │   ├─ beinet-user  -- 用户服务
 ├── beinet-core -- 通用模块
-│   ├─ beinet-base  -- 通用dto、常量等定义所在模块
+│   ├─ beinet-aliyun -- 阿里云对接模块
+│   ├─ beinet-base   -- 通用dto、常量等定义所在模块
 │   ├─ beinet-cache  -- 统一缓存
 │   ├─ beinet-config-refresh  -- 配置刷新通用模块
 │   ├─ beinet-dao  -- 仓储层基础包
