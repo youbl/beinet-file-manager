@@ -28,8 +28,8 @@
         </dependency>
         <!-- feign http请求依赖 -->
         <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-openfeign</artifactId>
+            <groupId>cn.beinet</groupId>
+            <artifactId>beinet-feign</artifactId>
         </dependency>
     </dependencies>
 </project>

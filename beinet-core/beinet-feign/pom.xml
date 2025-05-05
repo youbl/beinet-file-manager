@@ -9,24 +9,12 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>beinet-third</artifactId>
+    <artifactId>beinet-feign</artifactId>
 
     <dependencies>
         <dependency>
-            <groupId>cn.beinet</groupId>
-            <artifactId>beinet-feign</artifactId>
-        </dependency>
-
-        <!-- 阿里云安全组依赖 https://mvnrepository.com/artifact/com.aliyun/ecs20140526 -->
-        <dependency>
-            <groupId>com.aliyun</groupId>
-            <artifactId>ecs20140526</artifactId>
-        </dependency>
-
-        <!-- aws发邮件sdk -->
-        <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>sesv2</artifactId>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
         </dependency>
     </dependencies>
 </project>

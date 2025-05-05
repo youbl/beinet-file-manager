@@ -20,6 +20,7 @@ swagger地址：
 │   ├─ beinet-cache  -- 统一缓存
 │   ├─ beinet-config-refresh  -- 配置刷新通用模块
 │   ├─ beinet-dao  -- 仓储层基础包
+│   ├─ beinet-feign  -- feign web请求基础包
 │   ├─ beinet-gateway  -- gateway基础包
 │   ├─ beinet-kafka  -- kafka消息队列基础包
 │   ├─ beinet-message  -- 发消息基础包，如发邮件，发钉钉通知等
