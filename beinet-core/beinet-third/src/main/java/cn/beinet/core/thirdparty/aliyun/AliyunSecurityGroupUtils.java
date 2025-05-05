@@ -1,7 +1,7 @@
-package cn.beinet.core.aliyun;
+package cn.beinet.core.thirdparty.aliyun;
 
-import cn.beinet.core.aliyun.config.AliyunConfig;
-import cn.beinet.core.aliyun.dto.AliyunSecurityGroupDto;
+import cn.beinet.core.thirdparty.aliyun.config.AliyunConfig;
+import cn.beinet.core.thirdparty.aliyun.dto.AliyunSecurityGroupDto;
 import com.aliyun.ecs20140526.Client;
 import com.aliyun.ecs20140526.models.DescribeSecurityGroupAttributeRequest;
 import com.aliyun.ecs20140526.models.DescribeSecurityGroupAttributeResponse;

@@ -1,4 +1,4 @@
-package cn.beinet.core.aliyun.config;
+package cn.beinet.core.thirdparty.aliyun.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;

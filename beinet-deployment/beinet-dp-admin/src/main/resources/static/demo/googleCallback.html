@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>谷歌登录回调</title>
+</head>
+<body>
+<div>
+    <pre>
+本页面是google.html登录后的回调页面，接收url里#后面的参数，进行解析和展示
+这个页面接收到的是access_token,这个token可以直接用于访问google的api，
+如：
+state=xxx
+access_token=ya29.abc
+token_type=Bearer
+expires_in=3599
+scope=email%20profile%20https://www.googleapis.com/auth/userinfo.email%20openid%20https://www.googleapis.com/auth/drive.metadata.readonly%20https://www.googleapis.com/auth/userinfo.profile
+authuser=0
+prompt=none
+
+再使用这个access_token，去调用google的用户信息界面，获取到基本的用户信息即可：
+https://www.googleapis.com/oauth2/v1/userinfo?access_token=xxx
+注意：获取用户信息建议放在服务端，这样信任度比较高，避免从客户端获取后提交给服务端。
+    </pre>
+    <hr>
+    <div>
+        <div style="float: left">
+            <textarea id="txtUserInfoJs" style="width:600px;height: 500px;"></textarea>
+        </div>
+        <div style="float: left">
+            <textarea id="txtUserInfoServer" style="width:600px;height: 500px;"></textarea>
+        </div>
+        <div style="clear: both"></div>
+    </div>
+</div>
+
+<script>
+    start();
+
+    function start() {
+        // url参考：
+        // http://localhost:8801/ttt/red.html#state=77aT37k&access_token=ya29.xxx-xxx-xxx-xxx-xxx-xxx-xxx&token_type=Bearer&expires_in=3599&scope=email%20profile%20https://www.googleapis.com/auth/drive.metadata.readonly%20https://www.googleapis.com/auth/userinfo.profile%20https://www.googleapis.com/auth/userinfo.email%20openid&authuser=0&prompt=none
+        let url = location.href;
+        //prompt('', url);
+
+        let accessToken = getFromHash('access_token');
+        if (!accessToken) {
+            return alert('未找到access_token' + url);
+        }
+        // 前端用js获取google用户信息
+        getUserInfoFromGoogleByJs(accessToken);
+        // 后端获取google用户信息
+        getUserInfoFromGoogleByServer(accessToken);
+    }
+
+    /**
+     * 从url的锚里获取变量值
+     * @param name 变量名
+     * @returns {string} 变量值
+     */
+    function getFromHash(name) {
+        if (!name || !location.hash || location.hash.length <= 1) {
+            return ''; // 没有hash
+        }
+        let array = location.hash.substring(1).split('&'); // 去除第一个 #
+        for (let i = 0, j = array.length; i < j; i++) {
+            let item = array[i];
+            let idx = item.indexOf('=');
+            if (idx <= 0) continue;
+
+            if (name === item.substring(0, idx))
+                return item.substring(idx + 1);
+        }
+        return '';
+
+    }
+
+    function getUserInfoFromGoogleByJs(accessToken) {
+        let userInfoUrl = 'https://www.googleapis.com/oauth2/v1/userinfo?access_token=' + accessToken;
+
+        // var xhr = new XMLHttpRequest();
+        // xhr.open('GET', userInfoUrl);
+        // xhr.onreadystatechange = function (e) {
+        //     console.log(xhr.response);
+        // };
+        // xhr.send(null);
+        // return;
+
+        // 调用google api，获取用户信息
+        fetch(userInfoUrl)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+                return response.json(); // 假设我们正在处理 JSON
+            })
+            .then(data => {
+                document.getElementById('txtUserInfoJs').value = '用access_token前端直接请求得到的google用户信息:\r\n' +
+                    JSON.stringify(data, null, 4);
+            })
+            .catch(error => {
+                console.error('There has been a problem with your fetch operation:', error);
+            });
+    }
+
+    function getUserInfoFromGoogleByServer(accessToken) {
+        let userInfoUrl = '../google/token?accessToken=' + encodeURIComponent(accessToken);
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', userInfoUrl);
+        xhr.onreadystatechange = function (e) {
+            if (xhr.response) {
+                const data = JSON.parse(xhr.response);
+                document.getElementById('txtUserInfoServer').value = '用access_token去后端得到的google用户信息:\r\n' +
+                    JSON.stringify(data, null, 4);
+            }
+        };
+        xhr.send(null);
+    }
+
+
+</script>
+</body>
+</html>

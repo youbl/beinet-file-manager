@@ -1,4 +1,4 @@
-package cn.beinet.core.aliyun.dto;
+package cn.beinet.core.thirdparty.aliyun.dto;
 
 import lombok.Data;
 import lombok.experimental.Accessors;

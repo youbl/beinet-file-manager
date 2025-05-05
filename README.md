@@ -16,7 +16,6 @@ swagger地址：
 │   ├─ beinet-tenant  -- 租户服务
 │   ├─ beinet-user  -- 用户服务
 ├── beinet-core -- 通用模块
-│   ├─ beinet-aliyun -- 阿里云对接模块
 │   ├─ beinet-base   -- 通用dto、常量等定义所在模块
 │   ├─ beinet-cache  -- 统一缓存
 │   ├─ beinet-config-refresh  -- 配置刷新通用模块
@@ -25,6 +24,7 @@ swagger地址：
 │   ├─ beinet-kafka  -- kafka消息队列基础包
 │   ├─ beinet-message  -- 发消息基础包，如发邮件，发钉钉通知等
 │   ├─ beinet-redis  -- redis基础包
+│   ├─ beinet-third -- 第三方对接模块
 │   ├─ beinet-storage  -- 存储服务，如上传到s3或oss
 │   ├─ beinet-utils  -- 工具包
 │   ├─ beinet-web  -- web基础包

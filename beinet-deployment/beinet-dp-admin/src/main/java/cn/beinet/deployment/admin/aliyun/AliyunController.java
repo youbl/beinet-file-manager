@@ -1,8 +1,8 @@
 package cn.beinet.deployment.admin.aliyun;
 
-import cn.beinet.core.aliyun.AliyunSecurityGroupUtils;
-import cn.beinet.core.aliyun.dto.AliyunSecurityGroupDto;
 import cn.beinet.core.base.commonDto.ResponseData;
+import cn.beinet.core.thirdparty.aliyun.AliyunSecurityGroupUtils;
+import cn.beinet.core.thirdparty.aliyun.dto.AliyunSecurityGroupDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;

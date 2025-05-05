@@ -1,3 +1,5 @@
+server:
+  port: 8999
 beinet:
   config:
     path: D:\mine\beinet-file-manager\config.ini
@@ -8,3 +10,15 @@ ali:
     access-key-id: aa     # 阿里云上，有安全组操作权限的ak
     access-key-secret: bb # 阿里云上，有安全组操作权限的ak
     group-id: cc          # 要查看和编辑的安全组id
+
+
+github:
+  client-id: dd
+  client-secret: ee
+
+aws:
+  email:
+    region: us-east-1
+    access-key: ff
+    secret-key: gg
+    from: service@beinet.cn

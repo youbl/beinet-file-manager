@@ -54,7 +54,7 @@
         </dependency>
         <dependency>
             <groupId>cn.beinet</groupId>
-            <artifactId>beinet-aliyun</artifactId>
+            <artifactId>beinet-third</artifactId>
         </dependency>
     </dependencies>
 
