@@ -1,11 +1,14 @@
 package cn.beinet.core.web;
 
 import cn.beinet.core.utils.IpHelper;
+import cn.beinet.core.web.context.ContextUtils;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.NotNull;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,14 +26,16 @@ import java.util.stream.Collectors;
  */
 @RestController
 @Tag(name = "test", description = "测试接口")
-//@Hidden
+@Hidden
+@Slf4j
 public class HomeController {
-
+    
     @GetMapping(value = "test", produces = {"text/plain"})
     @Operation(summary = "默认接口")
     public String test(HttpServletRequest request) {
+        ContextUtils.setTraceId("abc");
         var ret = IpHelper.getRequestHeader(request);
-
+        log.info("请求test接口");
         return getServerInfo(ret);
     }
 

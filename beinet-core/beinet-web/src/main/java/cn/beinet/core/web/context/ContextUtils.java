@@ -1,6 +1,7 @@
 package cn.beinet.core.web.context;
 
 import cn.beinet.core.base.configs.ConfigConst;
+import cn.beinet.core.base.consts.LogConst;
 import cn.beinet.core.utils.IpHelper;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,13 +20,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
-import static cn.beinet.core.web.context.ContextConstants.HEADER_APPLICATION;
-import static cn.beinet.core.web.context.ContextConstants.HEADER_PREFIX;
-import static cn.beinet.core.web.context.ContextConstants.HEADER_PREFIX_ACCEPT;
-import static cn.beinet.core.web.context.ContextConstants.HEADER_PRODUCT;
-import static cn.beinet.core.web.context.ContextConstants.HEADER_REQUEST_TIME;
-import static cn.beinet.core.web.context.ContextConstants.HEADER_USER_ID;
-import static cn.beinet.core.web.context.ContextConstants.HEADER_X_TRACE_ID;
+import static cn.beinet.core.base.consts.ContextConstants.HEADER_APPLICATION;
+import static cn.beinet.core.base.consts.ContextConstants.HEADER_PREFIX;
+import static cn.beinet.core.base.consts.ContextConstants.HEADER_PREFIX_ACCEPT;
+import static cn.beinet.core.base.consts.ContextConstants.HEADER_PRODUCT;
+import static cn.beinet.core.base.consts.ContextConstants.HEADER_REQUEST_TIME;
+import static cn.beinet.core.base.consts.ContextConstants.HEADER_USER_ID;
+import static cn.beinet.core.base.consts.ContextConstants.HEADER_X_TRACE_ID;
 
 
 @Slf4j
@@ -54,7 +55,6 @@ public class ContextUtils {
      * 设置用户id到当前请求上下文属性里
      */
     public static void setUserId(Long userId) {
-        MDC.put("userId", userId.toString());
         setAttribute(HEADER_USER_ID, userId.toString());
     }
 
@@ -70,7 +70,7 @@ public class ContextUtils {
      * 设置跟踪id到当前请求上下文属性里
      */
     public static void setTraceId(String traceId) {
-        MDC.put("traceId", traceId);
+        MDC.put(LogConst.TRACE_ID, traceId);
         setAttribute(HEADER_X_TRACE_ID, traceId);
     }
 

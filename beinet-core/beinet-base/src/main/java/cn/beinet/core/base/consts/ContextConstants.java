@@ -1,4 +1,4 @@
-package cn.beinet.core.web.context;
+package cn.beinet.core.base.consts;
 
 public class ContextConstants {
     public static final String HEADER_PREFIX = "x-";

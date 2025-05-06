@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+    <appender name="JsonAppender" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <provider class="net.logstash.logback.composite.loggingevent.LoggingEventPatternJsonProvider">
+                <pattern>
+                    {
+                    "dt": "%d{yyyy-MM-dd HH:mm:ss}",
+                    "traceparent": "00-%mdc{trace_id}-%mdc{span_id}-%mdc{trace_flags}",
+                    "level": "%-5level"
+                    }
+                </pattern>
+            </provider>
+            <!-- 配置字段映射 -->
+            <fieldNames>
+                <timestamp>[ignore]</timestamp> <!-- 将 @timestamp 改为 dt -->
+                <message>message</message>
+                <logger>logger</logger>
+                <version>[ignore]</version>
+                <thread>thread_name</thread>
+                <level>[ignore]</level>
+                <levelValue>[ignore]</levelValue>
+                <stackTrace>exception</stackTrace>
+            </fieldNames>
+            <!-- This 'fixes' double quote problem for elastic -->
+            <jsonFactoryDecorator class="net.logstash.logback.decorate.CharacterEscapesJsonFactoryDecorator">
+                <escape>
+                    <targetCharacterCode>34</targetCharacterCode>
+                    <escapeSequence>'</escapeSequence>
+                </escape>
+            </jsonFactoryDecorator>
+            <!-- This shortens extremely long stacktraces. Not always needed -->
+            <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+                <maxDepthPerThrowable>30</maxDepthPerThrowable>
+                <maxLength>2048</maxLength>
+                <shortenedClassNameLength>20</shortenedClassNameLength>
+                <exclude>sun\.reflect\..*\.invoke.*</exclude>
+                <exclude>net\.sf\.cglib\.proxy\.MethodProxy\.invoke</exclude>
+                <rootCauseFirst>true</rootCauseFirst>
+                <inlineHash>true</inlineHash>
+            </throwableConverter>
+        </encoder>
+    </appender>
+    <root level="INFO">
+        <!-- 配置文件的：spring.profiles.active为local时，本地输出标准格式 -->
+        <springProfile name="dev | local | ybl">
+            <appender-ref ref="CONSOLE"/>
+        </springProfile>
+        <!-- 其它环境输出json格式 -->
+        <springProfile name="!(dev | local | ybl )">
+            <appender-ref ref="JsonAppender"/>
+        </springProfile>
+    </root>
+</configuration>
