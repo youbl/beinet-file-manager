@@ -1,6 +1,6 @@
 package cn.beinet.core.base.consts;
 
-public class ContextConstants {
+public class ContextConst {
     public static final String HEADER_PREFIX = "x-";
     public static final String HEADER_PREFIX_ACCEPT = "accept-";
     public static final String HEADER_USER_ID = "x-user-id";

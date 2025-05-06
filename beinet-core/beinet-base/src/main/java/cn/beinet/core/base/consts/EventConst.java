@@ -1,4 +1,4 @@
-package cn.beinet.sdk.event.constants;
+package cn.beinet.core.base.consts;
 
 /**
  * 事件相关的常量

@@ -1,10 +1,10 @@
 package cn.beinet.sdk.event.aspect;
 
 import cn.beinet.core.base.commonDto.ResponseData;
+import cn.beinet.core.base.consts.EventConst;
 import cn.beinet.core.web.context.ContextUtils;
 import cn.beinet.sdk.event.EventUtils;
 import cn.beinet.sdk.event.annotation.EventLog;
-import cn.beinet.sdk.event.constants.EventConst;
 import cn.beinet.sdk.event.enums.EventSubType;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

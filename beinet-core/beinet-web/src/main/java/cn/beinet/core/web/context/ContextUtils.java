@@ -20,13 +20,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
-import static cn.beinet.core.base.consts.ContextConstants.HEADER_APPLICATION;
-import static cn.beinet.core.base.consts.ContextConstants.HEADER_PREFIX;
-import static cn.beinet.core.base.consts.ContextConstants.HEADER_PREFIX_ACCEPT;
-import static cn.beinet.core.base.consts.ContextConstants.HEADER_PRODUCT;
-import static cn.beinet.core.base.consts.ContextConstants.HEADER_REQUEST_TIME;
-import static cn.beinet.core.base.consts.ContextConstants.HEADER_USER_ID;
-import static cn.beinet.core.base.consts.ContextConstants.HEADER_X_TRACE_ID;
+import static cn.beinet.core.base.consts.ContextConst.HEADER_APPLICATION;
+import static cn.beinet.core.base.consts.ContextConst.HEADER_PREFIX;
+import static cn.beinet.core.base.consts.ContextConst.HEADER_PREFIX_ACCEPT;
+import static cn.beinet.core.base.consts.ContextConst.HEADER_PRODUCT;
+import static cn.beinet.core.base.consts.ContextConst.HEADER_REQUEST_TIME;
+import static cn.beinet.core.base.consts.ContextConst.HEADER_USER_ID;
+import static cn.beinet.core.base.consts.ContextConst.HEADER_X_TRACE_ID;
 
 
 @Slf4j
