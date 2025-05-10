@@ -42,6 +42,7 @@
 
     <dependencyManagement>
         <dependencies>
+
             <dependency>
                 <groupId>cn.beinet</groupId>
                 <artifactId>beinet-base</artifactId>
@@ -81,6 +82,11 @@
             <dependency>
                 <groupId>cn.beinet</groupId>
                 <artifactId>beinet-event-sdk</artifactId>
+                <version>${beinet.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>cn.beinet</groupId>
+                <artifactId>beinet-login-sdk</artifactId>
                 <version>${beinet.version}</version>
             </dependency>
 

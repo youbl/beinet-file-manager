@@ -13,6 +13,7 @@
     <version>1.0-SNAPSHOT</version>
     <modules>
         <module>beinet-event-sdk</module>
+        <module>beinet-login-sdk</module>
     </modules>
 
     <dependencies>
@@ -30,6 +31,10 @@
         <dependency>
             <groupId>cn.beinet</groupId>
             <artifactId>beinet-feign</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>cn.beinet</groupId>
+            <artifactId>beinet-base</artifactId>
         </dependency>
     </dependencies>
 </project>
