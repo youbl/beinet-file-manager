@@ -1,8 +1,7 @@
 package cn.beinet.business.login;
 
+import cn.beinet.business.login.service.LoginService;
 import cn.beinet.core.base.commonDto.ResponseData;
-import cn.beinet.core.thirdparty.github.GithubUtil;
-import cn.beinet.core.thirdparty.google.GoogleLoginUtil;
 import cn.beinet.sdk.login.LoginSdk;
 import cn.beinet.sdk.login.dto.UserDto;
 import lombok.RequiredArgsConstructor;
@@ -14,8 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RequiredArgsConstructor
 public class LoginController implements LoginSdk {
-    private final GithubUtil githubUtil;
-    private final GoogleLoginUtil googleLoginUtil;
+    private final LoginService loginService;
 
     /**
      * 根据github授权码，去github获取用户信息，并完成登录
@@ -24,9 +22,10 @@ public class LoginController implements LoginSdk {
      * @return 用户信息，以及cookie里有token
      */
     @Override
+    @EventLog()
     public ResponseData<UserDto> github(@RequestParam String code) {
-        var ret = githubUtil.getUser(code);
-        return ResponseData.ok();
+        var ret = loginService.loginByGithub(code);
+        return ResponseData.ok(ret);
     }
 
     /**
@@ -36,8 +35,8 @@ public class LoginController implements LoginSdk {
      * @return 用户信息，以及cookie里有token
      */
     @Override
-    public ResponseData<UserDto> googleCallback(@RequestParam String accessToken) {
-        var ret = googleLoginUtil.getUserInfoByToken(accessToken);
-        return ResponseData.ok();
+    public ResponseData<UserDto> google(@RequestParam String accessToken) {
+        var ret = loginService.loginByGoogle(accessToken);
+        return ResponseData.ok(ret);
     }
 }
