@@ -22,7 +22,6 @@ public class LoginController implements LoginSdk {
      * @return 用户信息，以及cookie里有token
      */
     @Override
-    @EventLog()
     public ResponseData<UserDto> github(@RequestParam String code) {
         var ret = loginService.loginByGithub(code);
         return ResponseData.ok(ret);

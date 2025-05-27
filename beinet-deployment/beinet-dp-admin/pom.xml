@@ -44,10 +44,10 @@
             <groupId>cn.beinet</groupId>
             <artifactId>beinet-dao</artifactId>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>cn.beinet</groupId>-->
-<!--            <artifactId>beinet-redis</artifactId>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>cn.beinet</groupId>-->
+        <!--            <artifactId>beinet-redis</artifactId>-->
+        <!--        </dependency>-->
         <dependency>
             <groupId>cn.beinet</groupId>
             <artifactId>beinet-event-sdk</artifactId>
@@ -55,6 +55,11 @@
         <dependency>
             <groupId>cn.beinet</groupId>
             <artifactId>beinet-third</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>cn.beinet</groupId>
+            <artifactId>beinet-login</artifactId>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
 

@@ -5,20 +5,24 @@ import cn.beinet.core.base.consts.LogConst;
 import cn.beinet.core.utils.IpHelper;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
+import org.springframework.http.ResponseCookie;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.context.request.ServletWebRequest;
 
+import java.time.Duration;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 import static cn.beinet.core.base.consts.ContextConst.HEADER_APPLICATION;
 import static cn.beinet.core.base.consts.ContextConst.HEADER_PREFIX;
@@ -270,6 +274,53 @@ public class ContextUtils {
         return "";
     }
 
+    /**
+     * 在当前域名下添加Cookie
+     * @param cookieName cookie名
+     * @param value cookie值
+     * @param expireSecond 过期时间，秒
+     */
+    public static void addCookie(String cookieName, String value, long expireSecond) {
+        addCookie(cookieName, value, expireSecond, null);
+    }
+
+    /**
+     * 在当前域名的根域名下添加Cookie
+     * @param cookieName cookie名
+     * @param value cookie值
+     * @param expireSecond 过期时间，秒
+     */
+    public static void addCookieToBaseDomain(String cookieName, String value, long expireSecond) {
+        String domain = getBaseDomain();         // 设置为二级域名用，便于跨域统一登录
+        addCookie(cookieName, value, expireSecond, domain);
+    }
+
+    /**
+     * 添加Cookie
+     * @param cookieName cookie名
+     * @param value cookie值
+     * @param expireSecond 过期时间，秒
+     * @param domain cookie所属域名
+     */
+    public static void addCookie(String cookieName, String value, long expireSecond, String domain) {
+        // sameSite让跨域设置Cookie生效，必须搭配https，即secure(true)
+        ResponseCookie.ResponseCookieBuilder builder = ResponseCookie.from(cookieName, value)
+                .path("/")
+                .maxAge(Duration.ofSeconds(expireSecond))
+                .sameSite("None")  // 或 "Lax"、"Strict"
+                .secure(true)      // SameSite=None 必须 Secure
+                .httpOnly(true);
+
+        if (StringUtils.hasLength(domain)) {
+            builder.domain(domain);
+        }
+        ResponseCookie cookie = builder.build();
+        var response = getResponse();
+        if (response != null) {
+            response.addHeader("Set-Cookie", cookie.toString());
+        }
+    }
+
     public static void clearHeaders() {
         RequestContextHolder.resetRequestAttributes();
     }
@@ -347,8 +398,32 @@ public class ContextUtils {
         return attributes;
     }
 
+    /**
+     * 从请求上下文中提取二级域名，如
+     * www.abc.com 返回 abc.com
+     * abc.def.ghi.xxx 返回 ghi.xxx
+     *
+     * @return 二级域名
+     */
+    public static String getBaseDomain() {
+        var request = getRequest();
+        if (request == null) {
+            return "";
+        }
+        String domain = request.getServerName();
+        // IP直接返回
+        if (Pattern.matches("^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}$", domain))
+            return domain;
+        return domain.replaceAll(".*\\.(?=.*\\.)", "");
+    }
+
     public static HttpServletRequest getRequest() {
         ServletRequestAttributes servletRequestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         return servletRequestAttributes == null ? null : servletRequestAttributes.getRequest();
+    }
+
+    public static HttpServletResponse getResponse() {
+        ServletRequestAttributes servletRequestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        return servletRequestAttributes == null ? null : servletRequestAttributes.getResponse();
     }
 }

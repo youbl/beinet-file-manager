@@ -29,6 +29,7 @@
         <spring-cloud.version>2024.0.1</spring-cloud.version>
         <jasypt.version>3.0.5</jasypt.version>
         <org.mapstruct.version>1.6.3</org.mapstruct.version>
+        <jjwt.version>0.12.6</jjwt.version>
 
         <beinet.version>1.0-SNAPSHOT</beinet.version>
     </properties>
@@ -111,7 +112,7 @@
             <dependency>
                 <groupId>cn.hutool</groupId>
                 <artifactId>hutool-all</artifactId>
-                <version>5.8.34</version>
+                <version>5.8.38</version>
             </dependency>
             <dependency>
                 <groupId>org.aspectj</groupId>
@@ -229,6 +230,24 @@
                 <version>0.10.2</version>
             </dependency>
 
+            <!-- jwt依赖库 -->
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-api</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-impl</artifactId>
+                <version>${jjwt.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-jackson</artifactId>
+                <version>${jjwt.version}</version>
+                <scope>runtime</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

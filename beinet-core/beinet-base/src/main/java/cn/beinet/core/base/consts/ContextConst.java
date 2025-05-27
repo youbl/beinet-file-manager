@@ -13,4 +13,9 @@ public class ContextConst {
      * 收到请求的时间，可以便于后端计算响应时长
      */
     public static final String HEADER_REQUEST_TIME = "x-request-time";
+
+    public static final String LOGIN_COOKIE_NAME = "beinet-user";
+    public static final long LOGIN_EXPIRE_SECOND = 3600L * 24 * 30;
+    public static final String ANONYMOUS = "匿名";
+
 }

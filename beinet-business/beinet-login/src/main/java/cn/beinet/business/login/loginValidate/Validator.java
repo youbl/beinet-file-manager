@@ -1,0 +1,47 @@
+package cn.beinet.business.login.loginValidate;
+
+import cn.beinet.core.base.consts.ContextConst;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.Data;
+import lombok.experimental.Accessors;
+import org.springframework.core.Ordered;
+
+/**
+ * 登录接口类
+ *
+ * @author youbl
+ * @since 2023/1/4 18:17
+ */
+public interface Validator extends Ordered {
+
+    /**
+     * 身份验证方法，返回验证结果
+     *
+     * @param request  请求上下文
+     * @param response 响应上下文
+     * @return 验证结果
+     */
+    Result validated(HttpServletRequest request, HttpServletResponse response);
+
+    @Data
+    @Accessors(chain = true)
+    public static class Result {
+        /**
+         * 验证通过与否
+         */
+        private boolean passed;
+        /**
+         * 验证通过时的账号
+         */
+        private String account;
+
+        public static Result fail() {
+            return new Result().setPassed(false).setAccount(ContextConst.ANONYMOUS);
+        }
+
+        public static Result ok(String account) {
+            return new Result().setPassed(true).setAccount(account);
+        }
+    }
+}

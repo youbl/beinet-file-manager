@@ -12,6 +12,11 @@
     <artifactId>beinet-utils</artifactId>
 
     <dependencies>
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+        </dependency>
+
         <!-- HttpServletRequest相关类加载 -->
         <dependency>
             <groupId>jakarta.servlet</groupId>
