@@ -172,7 +172,7 @@
                 }
 
                 this.dataList = [];
-                let url = $$BASE_URL + 'aliyun/security-group?groupId=' + groupId;
+                let url = $$BASE_URL + 'api/aliyun/security-group?groupId=' + groupId;
                 return axios.post(url, this.searchCondition).then(response => {
                     this.loading = false;
                     if (!response.data || response.data.code !== 0) {
@@ -193,7 +193,7 @@
                 if (!confirm('确认要允许该策略吗?')) {
                     return;
                 }
-                let url = $$BASE_URL + 'aliyun/security-group/status/enable?groupId=' + groupId + '&ruleId=' + row.securityGroupRuleId;
+                let url = $$BASE_URL + 'api/aliyun/security-group/status/enable?groupId=' + groupId + '&ruleId=' + row.securityGroupRuleId;
                 return axios.post(url).then(response => {
                     if (!response.data || response.data.code !== 0) {
                         return alert('允许操作失败:' + getErrorMsg(response));
@@ -206,7 +206,7 @@
                 if (!confirm('确认要设置该策略为拒绝吗?')) {
                     return;
                 }
-                let url = $$BASE_URL + 'aliyun/security-group/status/disable?groupId=' + groupId + '&ruleId=' + row.securityGroupRuleId;
+                let url = $$BASE_URL + 'api/aliyun/security-group/status/disable?groupId=' + groupId + '&ruleId=' + row.securityGroupRuleId;
                 return axios.post(url).then(response => {
                     if (!response.data || response.data.code !== 0) {
                         return alert('拒绝操作失败:' + getErrorMsg(response));
@@ -219,7 +219,7 @@
                 if (!confirm('确认要删除该策略吗?')) {
                     return;
                 }
-                let url = $$BASE_URL + 'aliyun/security-group?groupId=' + groupId + '&ruleId=' + row.securityGroupRuleId;
+                let url = $$BASE_URL + 'api/aliyun/security-group?groupId=' + groupId + '&ruleId=' + row.securityGroupRuleId;
                 return axios.delete(url).then(response => {
                     if (!response.data || response.data.code !== 0) {
                         return alert('删除失败:' + getErrorMsg(response));

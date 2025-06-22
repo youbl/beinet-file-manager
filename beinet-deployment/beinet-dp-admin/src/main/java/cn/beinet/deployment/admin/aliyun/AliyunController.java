@@ -21,24 +21,24 @@ import java.util.List;
 public class AliyunController {
     private final AliyunSecurityGroupUtils aliyunSecurityGroupUtils;
 
-    @PostMapping("aliyun/security-group")
+    @PostMapping("api/aliyun/security-group")
     public ResponseData<List<AliyunSecurityGroupDto>> getSecurityGroups(@RequestParam String groupId) {
         return ResponseData.ok(aliyunSecurityGroupUtils.getSecurityGroups(groupId));
     }
 
-    @DeleteMapping("aliyun/security-group")
+    @DeleteMapping("api/aliyun/security-group")
     public ResponseData<Void> delSecurityGroups(@RequestParam String groupId, @RequestParam String ruleId) {
         aliyunSecurityGroupUtils.delSecurityGroup(groupId, ruleId);
         return ResponseData.ok();
     }
 
-    @PostMapping("aliyun/security-group/status/enable")
+    @PostMapping("api/aliyun/security-group/status/enable")
     public ResponseData<Void> enableSecurityGroups(@RequestParam String groupId, @RequestParam String ruleId) {
         aliyunSecurityGroupUtils.changeSecurityGroupStatus(groupId, ruleId, true);
         return ResponseData.ok();
     }
 
-    @PostMapping("aliyun/security-group/status/disable")
+    @PostMapping("api/aliyun/security-group/status/disable")
     public ResponseData<Void> disableSecurityGroups(@RequestParam String groupId, @RequestParam String ruleId) {
         aliyunSecurityGroupUtils.changeSecurityGroupStatus(groupId, ruleId, false);
         return ResponseData.ok();
