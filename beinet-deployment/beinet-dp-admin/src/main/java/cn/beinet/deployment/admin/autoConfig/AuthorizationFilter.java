@@ -1,6 +1,7 @@
 package cn.beinet.deployment.admin.autoConfig;
 
 import cn.beinet.business.login.loginValidate.Validator;
+import cn.beinet.business.login.service.AuditLogService;
 import cn.beinet.core.base.commonDto.ResponseData;
 import cn.beinet.core.base.configs.ConfigConst;
 import cn.beinet.core.base.consts.ContextConst;
@@ -34,6 +35,7 @@ public class AuthorizationFilter extends OncePerRequestFilter {
 
     private final List<Validator> validatorList;
     private final ObjectMapper objectMapper;
+    private final AuditLogService auditLogService;
 
     private final static String DEFAULT_ALLOW_HEADERS = "Authorization,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,token,simple-auth";
 
@@ -56,6 +58,11 @@ public class AuthorizationFilter extends OncePerRequestFilter {
                 // 添加登录后的信息
                 request.setAttribute(ContextConst.LOGIN_COOKIE_NAME, account);
 
+                // 记录访问成功（仅对需要认证的请求）
+                if (!ContextConst.ANONYMOUS.equals(account)) {
+                    auditLogService.recordAccessSuccess(account, request);
+                }
+
                 filterChain.doFilter(request, response);
                 return;
             }
@@ -66,6 +73,9 @@ public class AuthorizationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
+
+        // 记录认证失败
+        auditLogService.recordAuthenticationFailed(request, "Token验证失败或不存在");
 
         // @ExceptionHandler(Exception.class) 不会拦截Filter里的异常，要自己返回
         endResponse(request, response, 401, "请重新登录: " + request.getRequestURI());

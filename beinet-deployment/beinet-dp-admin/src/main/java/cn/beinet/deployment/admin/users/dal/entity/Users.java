@@ -150,6 +150,52 @@ public class Users implements Serializable {
     @TableField(value = "`userLoc`")
     private String userLoc;
 
+    /**
+     * GitHub用户ID
+     */
+    @TableField(value = "`github_id`")
+    private Long githubId;
+
+    /**
+     * GitHub用户名
+     */
+    @Size(max = 255)
+    @TableField(value = "`github_login`")
+    private String githubLogin;
+
+    /**
+     * GitHub头像URL
+     */
+    @Size(max = 500)
+    @TableField(value = "`github_avatar_url`")
+    private String githubAvatarUrl;
+
+    /**
+     * GitHub节点ID
+     */
+    @Size(max = 255)
+    @TableField(value = "`github_node_id`")
+    private String githubNodeId;
+
+    /**
+     * 登录类型: 1=GitHub, 2=Google, 3=密码
+     */
+    @TableField(value = "`login_type`")
+    private Integer loginType;
+
+    /**
+     * 最后登录IP
+     */
+    @Size(max = 45)
+    @TableField(value = "`last_login_ip`")
+    private String lastLoginIp;
+
+    /**
+     * 登录次数
+     */
+    @TableField(value = "`login_count`")
+    private Integer loginCount;
+
 
 }
 /*

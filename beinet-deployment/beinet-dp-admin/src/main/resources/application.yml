@@ -32,6 +32,29 @@ sdk:
   api:
     - /version
 
+# GitHub OAuth 配置
+github:
+  oauth:
+    client-id: ${GITHUB_CLIENT_ID:}
+    client-secret: ${GITHUB_CLIENT_SECRET:}
+    redirect-uri: ${GITHUB_REDIRECT_URI:http://localhost:8080/login/github/callback}
+
+# 认证配置
+auth:
+  whitelist:
+    enabled: true
+    paths:
+      - /login/**
+      - /swagger-ui/**
+      - /v3/api-docs/**
+      - /static/**
+      - /favicon.ico
+      - /error
+      - /actuator/health
+  jwt:
+    expire-seconds: 86400  # 24小时
+    secret: ${login.secret:beinet.cn.file}
+
 jasypt:
   encryptor:
     password: .beinet.cn.

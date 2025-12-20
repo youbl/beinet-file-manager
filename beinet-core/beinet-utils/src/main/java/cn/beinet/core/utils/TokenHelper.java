@@ -90,6 +90,45 @@ public class TokenHelper {
     }
 
     /**
+     * 获取Token的剩余有效期（秒）
+     * 
+     * @param token JWT Token
+     * @param secret 密钥
+     * @return 剩余有效期（秒），如果Token无效或已过期返回0
+     */
+    public static long getRemainingTtl(String token, String secret) {
+        if (!StringUtils.hasLength(token)) {
+            return 0;
+        }
+        
+        try {
+            JWT jwt = JWTUtil.parseToken(token);
+            
+            // 验证token
+            if (!JWTUtil.verify(token, secret.getBytes())) {
+                return 0;
+            }
+            
+            // 获取过期时间
+            Date expireDate = jwt.getPayload().getClaimsJson().getDate("exp");
+            if (expireDate == null) {
+                return 0;
+            }
+            
+            long now = System.currentTimeMillis();
+            long expireTime = expireDate.getTime();
+            
+            if (expireTime <= now) {
+                return 0; // 已过期
+            }
+            
+            return (expireTime - now) / 1000; // 转换为秒
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    /**
      * 用户类型枚举
      */
     public enum UserType {
