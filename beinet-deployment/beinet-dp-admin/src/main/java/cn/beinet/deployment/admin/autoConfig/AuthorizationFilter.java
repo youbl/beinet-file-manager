@@ -2,6 +2,7 @@ package cn.beinet.deployment.admin.autoConfig;
 
 import cn.beinet.business.login.loginValidate.Validator;
 import cn.beinet.core.base.commonDto.ResponseData;
+import cn.beinet.core.base.configs.ConfigConst;
 import cn.beinet.core.base.consts.ContextConst;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
@@ -22,6 +23,7 @@ import java.util.List;
 
 /**
  * 用于拦截所有的请求，并验证是否登录
+ *
  * @author youbl
  * @since 2025/5/21 14:10
  */
@@ -58,12 +60,12 @@ public class AuthorizationFilter extends OncePerRequestFilter {
                 return;
             }
         }
-//        if (Env.isDev()) {
-//            // 开发环境用的调试代码
-//            request.setAttribute(ContextConst.LOGIN_COOKIE_NAME, "Dev_Debug");
-//            filterChain.doFilter(request, response);
-//            return;
-//        }
+        if (ConfigConst.isDev()) {
+            // 开发环境用的调试代码
+            request.setAttribute(ContextConst.LOGIN_COOKIE_NAME, "Dev_Debug");
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         // @ExceptionHandler(Exception.class) 不会拦截Filter里的异常，要自己返回
         endResponse(request, response, 401, "请重新登录: " + request.getRequestURI());
@@ -96,7 +98,7 @@ public class AuthorizationFilter extends OncePerRequestFilter {
      *
      * @param request  请求上下文
      * @param response 响应上下文
-     * @param code      错误码
+     * @param code     错误码
      * @param msg      错误信息
      */
     public void endResponse(HttpServletRequest request, HttpServletResponse response, int code, String msg) {
