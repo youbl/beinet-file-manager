@@ -1,6 +1,6 @@
 package cn.beinet.deployment.admin.auditlog;
 
-import cn.beinet.business.login.service.AuditLogService;
+// import cn.beinet.business.login.service.AuditLogService;
 import cn.beinet.core.base.commonDto.ResponseData;
 import cn.beinet.deployment.admin.auditlog.dto.AuditLogQueryDto;
 import cn.beinet.deployment.admin.auditlog.dto.AuditLogStatisticsDto;
@@ -23,13 +23,14 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/audit-logs")
-@RequiredArgsConstructor
+// @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "审计日志管理", description = "审计日志查询和统计接口")
 public class AuditLogController {
 
-    private final AuditLogService auditLogService;
+    // private final AuditLogService auditLogService;
 
+    /*
     @PostMapping("/query")
     @Operation(summary = "查询审计日志", description = "分页查询审计日志，支持多条件筛选")
     public ResponseData<IPage<Map<String, Object>>> queryAuditLogs(@RequestBody AuditLogQueryDto queryDto) {
@@ -51,7 +52,9 @@ public class AuditLogController {
             return ResponseData.fail(500, "查询审计日志失败: " + e.getMessage());
         }
     }
+    */
 
+    /*
     @GetMapping("/statistics")
     @Operation(summary = "获取审计日志统计", description = "获取审计日志的统计信息")
     public ResponseData<AuditLogStatisticsDto> getStatistics(
@@ -105,7 +108,9 @@ public class AuditLogController {
             return ResponseData.fail(500, "获取审计日志统计失败: " + e.getMessage());
         }
     }
+    */
 
+    /*
     @PostMapping("/cleanup")
     @Operation(summary = "清理旧日志", description = "清理指定天数之前的审计日志")
     public ResponseData<Integer> cleanupOldLogs(@RequestParam int retentionDays) {
@@ -121,6 +126,7 @@ public class AuditLogController {
             return ResponseData.fail(500, "清理旧日志失败: " + e.getMessage());
         }
     }
+    */
 
     @GetMapping("/event-types")
     @Operation(summary = "获取事件类型列表", description = "获取所有可用的事件类型")

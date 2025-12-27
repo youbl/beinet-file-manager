@@ -1,6 +1,6 @@
 package cn.beinet.deployment.admin.config;
 
-import cn.beinet.business.login.config.WhitelistConfig;
+// import cn.beinet.business.login.config.WhitelistConfig;
 import cn.beinet.core.base.commonDto.ResponseData;
 import cn.beinet.deployment.admin.config.dto.WhitelistConfigDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,9 +28,10 @@ import java.util.Map;
 @Tag(name = "系统配置管理", description = "系统配置查询和更新接口")
 public class ConfigController {
 
-    private final WhitelistConfig whitelistConfig;
+    // private final WhitelistConfig whitelistConfig;
     private final ConfigurableEnvironment environment;
 
+    /*
     @GetMapping("/whitelist")
     @Operation(summary = "获取白名单配置", description = "获取当前的白名单路径配置")
     public ResponseData<WhitelistConfigDto> getWhitelistConfig() {
@@ -46,7 +47,9 @@ public class ConfigController {
             return ResponseData.fail(500, "获取白名单配置失败: " + e.getMessage());
         }
     }
+    */
 
+    /*
     @PutMapping("/whitelist")
     @Operation(summary = "更新白名单配置", description = "更新白名单路径配置（运行时生效）")
     public ResponseData<Boolean> updateWhitelistConfig(@RequestBody WhitelistConfigDto dto) {
@@ -78,7 +81,9 @@ public class ConfigController {
             return ResponseData.fail(500, "更新白名单配置失败: " + e.getMessage());
         }
     }
+    */
 
+    /*
     @PostMapping("/whitelist/validate")
     @Operation(summary = "验证白名单路径", description = "验证指定路径是否匹配白名单规则")
     public ResponseData<Map<String, Object>> validateWhitelistPath(@RequestParam String path) {
@@ -96,6 +101,7 @@ public class ConfigController {
             return ResponseData.fail(500, "验证白名单路径失败: " + e.getMessage());
         }
     }
+    */
 
     @GetMapping("/system-info")
     @Operation(summary = "获取系统信息", description = "获取系统运行时配置信息")
@@ -110,8 +116,8 @@ public class ConfigController {
             
             // 认证相关配置
             Map<String, Object> authConfig = new HashMap<>();
-            authConfig.put("whitelistEnabled", whitelistConfig.getEnabled());
-            authConfig.put("whitelistPathCount", whitelistConfig.getPaths() != null ? whitelistConfig.getPaths().size() : 0);
+            authConfig.put("whitelistEnabled", true); // whitelistConfig.getEnabled()
+            authConfig.put("whitelistPathCount", 0); // whitelistConfig.getPaths() != null ? whitelistConfig.getPaths().size() : 0
             systemInfo.put("authConfig", authConfig);
             
             return ResponseData.ok(systemInfo);
@@ -121,9 +127,8 @@ public class ConfigController {
         }
     }
 
-    /**
-     * 检查路径是否在白名单中
-     */
+    /*
+    // 检查路径是否在白名单中
     private boolean isPathWhitelisted(String path) {
         if (whitelistConfig.getPaths() == null || !whitelistConfig.getEnabled()) {
             return false;
@@ -139,9 +144,7 @@ public class ConfigController {
         return false;
     }
 
-    /**
-     * 获取匹配的模式
-     */
+    // 获取匹配的模式
     private String getMatchedPattern(String path) {
         if (whitelistConfig.getPaths() == null || !whitelistConfig.getEnabled()) {
             return null;
@@ -156,6 +159,7 @@ public class ConfigController {
         
         return null;
     }
+    */
 
     /**
      * 动态更新环境属性

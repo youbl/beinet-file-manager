@@ -1,10 +1,10 @@
 package cn.beinet.deployment.admin.users.controller;
 
-import cn.beinet.business.login.service.UserManagementService;
+// import cn.beinet.business.login.service.UserManagementService;
 import cn.beinet.core.base.commonDto.ResponseData;
 import cn.beinet.deployment.admin.users.dto.UsersDto;
 import cn.beinet.deployment.admin.users.service.UsersService;
-import cn.beinet.sdk.login.dto.UserDto;
+// import cn.beinet.sdk.login.dto.UserDto;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -26,7 +26,7 @@ import java.util.List;
 @Tag(name = "users", description = "用户增删改查接口类")
 public class UsersController {
     private final UsersService service;
-    private final UserManagementService userManagementService;
+    // private final UserManagementService userManagementService;
 
     @PostMapping("/users/all")
     @Operation(summary = "用户列表", description = "用户列表查询接口")
@@ -71,7 +71,7 @@ public class UsersController {
     }
 
     // ========== 用户管理功能扩展 ==========
-
+    /*
     @GetMapping("/users/management/page")
     @Operation(summary = "分页查询用户", description = "分页查询用户列表，支持搜索和筛选")
     public ResponseData<IPage<UserDto>> queryUsersPage(
@@ -120,5 +120,5 @@ public class UsersController {
         UserManagementService.UserStatistics statistics = userManagementService.getUserStatistics();
         return ResponseData.ok(statistics);
     }
-
+    */
 }
