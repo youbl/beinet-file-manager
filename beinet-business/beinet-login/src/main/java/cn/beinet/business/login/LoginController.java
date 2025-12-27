@@ -19,6 +19,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 @RestController
 @Slf4j
@@ -74,12 +76,13 @@ public class LoginController implements LoginSdk {
     /**
      * 用户登出
      *
-     * @param request HTTP请求
      * @return 登出结果
      */
-    @PostMapping("/login/logout")
+    @Override
+    @PostMapping("/login/logout") 
     @Operation(summary = "用户登出", description = "用户主动登出，使Token失效")
-    public ResponseData<Void> logout(HttpServletRequest request) {
+    public ResponseData<Void> logout() {
+        HttpServletRequest request = getCurrentRequest();
         try {
             String token = getTokenFromRequest(request);
             if (!StringUtils.hasText(token)) {
@@ -121,12 +124,13 @@ public class LoginController implements LoginSdk {
     /**
      * 获取当前登录用户信息
      *
-     * @param request HTTP请求
      * @return 用户信息
      */
+    @Override
     @GetMapping("/login/user/info")
     @Operation(summary = "获取用户信息", description = "获取当前登录用户的详细信息")
-    public ResponseData<UserDto> getUserInfo(HttpServletRequest request) {
+    public ResponseData<UserDto> getUserInfo() {
+        HttpServletRequest request = getCurrentRequest();
         try {
             String token = getTokenFromRequest(request);
             if (!StringUtils.hasText(token)) {
@@ -166,6 +170,19 @@ public class LoginController implements LoginSdk {
             log.error("获取用户信息失败", e);
             return ResponseData.fail(500, "获取用户信息失败: " + e.getMessage());
         }
+    }
+
+    /**
+     * 获取当前HTTP请求
+     * 
+     * @return HTTP请求
+     */
+    private HttpServletRequest getCurrentRequest() {
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attributes == null) {
+            throw new RuntimeException("无法获取当前HTTP请求");
+        }
+        return attributes.getRequest();
     }
 
     /**

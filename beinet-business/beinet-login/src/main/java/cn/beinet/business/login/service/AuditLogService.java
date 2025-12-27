@@ -180,7 +180,7 @@ public class AuditLogService {
      */
     public void recordAccessSuccess(String account, HttpServletRequest request) {
         // 只记录非匿名用户的访问
-        if (ContextConst.ANONYMOUS.equals(account)) {
+        if ("匿名".equals(account)) {
             return;
         }
         
