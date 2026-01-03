@@ -1,8 +1,7 @@
 package cn.beinet.business.login.service;
 
-import cn.beinet.business.login.enums.AuditEventType;
-import cn.beinet.deployment.admin.users.dal.UsersMapper;
-import cn.beinet.deployment.admin.users.dal.entity.Users;
+import cn.beinet.business.login.dal.UsersMapper;
+import cn.beinet.business.login.dal.entity.Users;
 import cn.beinet.sdk.login.dto.UserDto;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;

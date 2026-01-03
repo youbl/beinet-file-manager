@@ -1,7 +1,7 @@
-package cn.beinet.deployment.admin.users.mapstruct;
+package cn.beinet.business.login.mapstruct;
 
-import cn.beinet.deployment.admin.users.dal.entity.Users;
-import cn.beinet.deployment.admin.users.dto.UsersDto;
+import cn.beinet.business.login.dal.entity.Users;
+import cn.beinet.business.login.dto.UsersDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;

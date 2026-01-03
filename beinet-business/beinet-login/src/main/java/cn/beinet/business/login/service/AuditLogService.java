@@ -1,10 +1,9 @@
 package cn.beinet.business.login.service;
 
 import cn.beinet.business.login.dal.entity.AuditLogs;
-import cn.beinet.business.login.dal.mapper.AuditLogsMapper;
+import cn.beinet.business.login.dal.AuditLogsMapper;
 import cn.beinet.business.login.dto.AuditLogDto;
 import cn.beinet.business.login.enums.AuditEventType;
-import cn.beinet.core.web.context.ContextUtils;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import jakarta.servlet.http.HttpServletRequest;

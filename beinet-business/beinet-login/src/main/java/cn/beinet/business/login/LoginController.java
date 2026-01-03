@@ -1,5 +1,7 @@
 package cn.beinet.business.login;
 
+import cn.beinet.business.login.dal.UsersMapper;
+import cn.beinet.business.login.dal.entity.Users;
 import cn.beinet.business.login.service.AuditLogService;
 import cn.beinet.business.login.service.LoginService;
 import cn.beinet.business.login.service.TokenBlacklistService;
@@ -7,8 +9,6 @@ import cn.beinet.core.base.commonDto.ResponseData;
 import cn.beinet.core.base.consts.ContextConst;
 import cn.beinet.core.utils.TokenHelper;
 import cn.beinet.core.web.context.ContextUtils;
-import cn.beinet.deployment.admin.users.dal.UsersMapper;
-import cn.beinet.deployment.admin.users.dal.entity.Users;
 import cn.beinet.sdk.login.LoginSdk;
 import cn.beinet.sdk.login.dto.UserDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,7 +18,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 

@@ -1,8 +1,8 @@
 package cn.beinet.business.login.health;
 
+import cn.beinet.business.login.dal.UsersMapper;
 import cn.beinet.business.login.dto.HealthCheckDto;
 import cn.beinet.business.login.service.TokenBlacklistService;
-import cn.beinet.deployment.admin.users.dal.UsersMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.actuate.health.Health;

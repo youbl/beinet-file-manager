@@ -1,4 +1,4 @@
-package cn.beinet.deployment.admin.users.dto;
+package cn.beinet.business.login.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;

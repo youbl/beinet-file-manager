@@ -1,7 +1,6 @@
 package cn.beinet.deployment.admin.autoConfig;
 
-// import cn.beinet.business.login.loginValidate.Validator;
-// import cn.beinet.business.login.service.AuditLogService;
+import cn.beinet.business.login.loginValidate.Validator;
 import cn.beinet.core.base.commonDto.ResponseData;
 import cn.beinet.core.base.configs.ConfigConst;
 import cn.beinet.core.base.consts.ContextConst;
@@ -33,7 +32,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AuthorizationFilter extends OncePerRequestFilter {
 
-    // private final List<Validator> validatorList;
+    private final List<Validator> validatorList;
     private final ObjectMapper objectMapper;
     // private final AuditLogService auditLogService;
 
@@ -49,8 +48,6 @@ public class AuthorizationFilter extends OncePerRequestFilter {
             return;
         }
 
-        // TODO: 暂时注释掉认证逻辑，等beinet-login模块编译成功后再恢复
-        /*
         // 逐一调用验证器，比如不需要登录的页面、比如SDK登录等等
         for (Validator item : validatorList) {
             var result = item.validated(request, response);
@@ -61,15 +58,15 @@ public class AuthorizationFilter extends OncePerRequestFilter {
                 request.setAttribute(ContextConst.LOGIN_COOKIE_NAME, account);
 
                 // 记录访问成功（仅对需要认证的请求）
-                if (!ContextConst.ANONYMOUS.equals(account)) {
-                    auditLogService.recordAccessSuccess(account, request);
-                }
+//                if (!ContextConst.ANONYMOUS.equals(account)) {
+//                    auditLogService.recordAccessSuccess(account, request);
+//                }
 
                 filterChain.doFilter(request, response);
                 return;
             }
         }
-        */
+
         if (ConfigConst.isDev()) {
             // 开发环境用的调试代码
             request.setAttribute(ContextConst.LOGIN_COOKIE_NAME, "Dev_Debug");
@@ -82,7 +79,7 @@ public class AuthorizationFilter extends OncePerRequestFilter {
 
         // 临时允许所有请求通过
         filterChain.doFilter(request, response);
-        
+
         // @ExceptionHandler(Exception.class) 不会拦截Filter里的异常，要自己返回
         // endResponse(request, response, 401, "请重新登录: " + request.getRequestURI());
         //throw new BaseException(401, "请重新登录: " + request.getRequestURI());

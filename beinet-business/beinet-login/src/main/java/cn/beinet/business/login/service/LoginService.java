@@ -1,7 +1,7 @@
 package cn.beinet.business.login.service;
 
-import cn.beinet.business.login.dal.entity.AuditLogs;
-import cn.beinet.business.login.dto.AuditLogDto;
+import cn.beinet.business.login.dal.UsersMapper;
+import cn.beinet.business.login.dal.entity.Users;
 import cn.beinet.core.base.consts.ContextConst;
 import cn.beinet.core.thirdparty.github.GithubUtil;
 import cn.beinet.core.thirdparty.github.feigns.dto.GithubUserDto;
@@ -9,8 +9,6 @@ import cn.beinet.core.thirdparty.google.GoogleLoginUtil;
 import cn.beinet.core.thirdparty.google.dto.GoogleInfoResult;
 import cn.beinet.core.utils.TokenHelper;
 import cn.beinet.core.web.context.ContextUtils;
-import cn.beinet.deployment.admin.users.dal.UsersMapper;
-import cn.beinet.deployment.admin.users.dal.entity.Users;
 import cn.beinet.sdk.login.dto.UserDto;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;

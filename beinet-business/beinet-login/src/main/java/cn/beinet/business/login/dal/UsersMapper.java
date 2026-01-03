@@ -1,7 +1,7 @@
-package cn.beinet.deployment.admin.users.dal;
+package cn.beinet.business.login.dal;
 
+import cn.beinet.business.login.dal.entity.Users;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import cn.beinet.deployment.admin.users.dal.entity.Users;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;

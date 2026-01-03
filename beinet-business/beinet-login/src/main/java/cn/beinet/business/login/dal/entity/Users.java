@@ -1,4 +1,4 @@
-package cn.beinet.deployment.admin.users.dal.entity;
+package cn.beinet.business.login.dal.entity;
 
 import com.baomidou.mybatisplus.annotation.FieldStrategy;
 import com.baomidou.mybatisplus.annotation.IdType;

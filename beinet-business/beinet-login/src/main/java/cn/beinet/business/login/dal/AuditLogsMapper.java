@@ -1,4 +1,4 @@
-package cn.beinet.business.login.dal.mapper;
+package cn.beinet.business.login.dal;
 
 import cn.beinet.business.login.dal.entity.AuditLogs;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
