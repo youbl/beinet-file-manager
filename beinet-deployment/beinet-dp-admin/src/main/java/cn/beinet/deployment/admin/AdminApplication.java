@@ -1,6 +1,8 @@
 package cn.beinet.deployment.admin;
 
 import cn.beinet.core.base.configs.SystemConst;
+import org.jasypt.encryption.pbe.PooledPBEStringEncryptor;
+import org.jasypt.encryption.pbe.config.SimpleStringPBEConfig;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -25,6 +27,7 @@ import java.nio.charset.StandardCharsets;
 public class AdminApplication implements CommandLineRunner {
 
     public static void main(String[] args) {
+        //decrypt("eP7nQwcd/E2fjjk8oOG3hyH+4En0uAdF+o1FeDtPe/8BgEK/JfDevg6mgMn6MfWc");
         SpringApplication.run(AdminApplication.class, args);
     }
 
@@ -48,5 +51,32 @@ public class AdminApplication implements CommandLineRunner {
         System.out.println("3.--- " + jarFile.getAbsolutePath());
 
         System.out.println("4.--- " + SystemConst.getBaseDir());
+    }
+
+    private static void encrypt(String str) {
+        var encryptor = createEncryptor(".beinet.cn.");
+        System.out.printf("%s\n%s", encryptor, encryptor.encrypt(str));
+    }
+
+    private static void decrypt(String str) {
+        var encryptor = createEncryptor(".beinet.cn.");
+        System.out.printf("%s\n%s", encryptor, encryptor.decrypt(str));
+    }
+
+    private static PooledPBEStringEncryptor createEncryptor(String password) {
+        // 参考 https://github.com/ulisesbocchio/jasypt-spring-boot
+        PooledPBEStringEncryptor encryptor = new PooledPBEStringEncryptor();
+        SimpleStringPBEConfig config = new SimpleStringPBEConfig();
+        config.setPassword(password);
+        // 默认值
+        config.setAlgorithm("PBEWITHHMACSHA512ANDAES_256");
+        config.setKeyObtentionIterations("1000");
+        config.setPoolSize("1");
+        config.setProviderName("SunJCE");
+        config.setSaltGeneratorClassName("org.jasypt.salt.RandomSaltGenerator");
+        config.setIvGeneratorClassName("org.jasypt.iv.RandomIvGenerator");
+        config.setStringOutputType("base64");
+        encryptor.setConfig(config);
+        return encryptor;
     }
 }

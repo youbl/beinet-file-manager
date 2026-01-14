@@ -1,0 +1,35 @@
+server:
+  port: 8999
+beinet:
+  config:
+    path: D:\mine\beinet-file-manager\config.ini
+
+spring:
+  datasource:
+    url: jdbc:mysql://mysql-write-dev.browseract.com/eb-dev?serverTimezone=UTC&allowMultiQueries=true&useUnicode=true&characterEncoding=utf8&socketTimeout=3000&connectTimeout=3000&useSSL=false&rewriteBatchedStatements=true&allowPublicKeyRetrieval=true&zeroDateTimeBehavior=round
+    username: root
+    password: ENC(eP7nQwcd/E2fjjk8oOG3hyH+4En0uAdF+o1FeDtPe/8BgEK/JfDevg6mgMn6MfWc)
+  data:
+    redis:
+      host: redis-dev.browseract.com
+      port: 8379
+      password: ENC(eP7nQwcd/E2fjjk8oOG3hyH+4En0uAdF+o1FeDtPe/8BgEK/JfDevg6mgMn6MfWc)
+
+ali:
+  security-policy:
+    region-id: cn-shenzhen
+    access-key-id: aa     # 阿里云上，有安全组操作权限的ak
+    access-key-secret: bb # 阿里云上，有安全组操作权限的ak
+    group-id: cc          # 要查看和编辑的安全组id
+
+
+github:
+  client-id: dd
+  client-secret: ee
+
+aws:
+  email:
+    region: us-east-1
+    access-key: ff
+    secret-key: gg
+    from: service@beinet.cn

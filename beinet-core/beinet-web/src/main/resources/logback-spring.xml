@@ -45,11 +45,11 @@
     </appender>
     <root level="INFO">
         <!-- 配置文件的：spring.profiles.active为local时，本地输出标准格式 -->
-        <springProfile name="dev | local | ybl">
+        <springProfile name="dev | local | ybl | zx">
             <appender-ref ref="CONSOLE"/>
         </springProfile>
         <!-- 其它环境输出json格式 -->
-        <springProfile name="!(dev | local | ybl )">
+        <springProfile name="!(dev | local | ybl | zx)">
             <appender-ref ref="JsonAppender"/>
         </springProfile>
     </root>
