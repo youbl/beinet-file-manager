@@ -2,12 +2,10 @@ package cn.beinet.business.login.health;
 
 import cn.beinet.business.login.dal.UsersMapper;
 import cn.beinet.business.login.dto.HealthCheckDto;
-import cn.beinet.business.login.service.TokenBlacklistService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -26,8 +24,7 @@ import java.util.Map;
 public class AuthHealthIndicator implements HealthIndicator {
 
     private final UsersMapper usersMapper;
-    private final TokenBlacklistService tokenBlacklistService;
-    private final RedisTemplate<String, String> redisTemplate;
+    //private final RedisTemplate<String, String> redisTemplate;
 
     @Override
     public Health health() {
@@ -74,18 +71,11 @@ public class AuthHealthIndicator implements HealthIndicator {
         }
 
         // 检查Redis连接
-        HealthCheckDto.ComponentHealth redisHealth = checkRedis();
-        components.put("redis", redisHealth);
-        if (!"UP".equals(redisHealth.getStatus())) {
-            allHealthy = false;
-        }
-
-        // 检查Token黑名单服务
-        HealthCheckDto.ComponentHealth blacklistHealth = checkTokenBlacklist();
-        components.put("tokenBlacklist", blacklistHealth);
-        if (!"UP".equals(blacklistHealth.getStatus())) {
-            allHealthy = false;
-        }
+//        HealthCheckDto.ComponentHealth redisHealth = checkRedis();
+//        components.put("redis", redisHealth);
+//        if (!"UP".equals(redisHealth.getStatus())) {
+//            allHealthy = false;
+//        }
 
         // 添加统计信息
         details.put("totalComponents", components.size());
@@ -139,70 +129,36 @@ public class AuthHealthIndicator implements HealthIndicator {
     /**
      * 检查Redis连接
      */
-    private HealthCheckDto.ComponentHealth checkRedis() {
-        long startTime = System.currentTimeMillis();
-        try {
-            // 执行ping测试Redis连接
-            String pong = redisTemplate.getConnectionFactory().getConnection().ping();
-            long duration = System.currentTimeMillis() - startTime;
-            
-            Map<String, Object> details = new HashMap<>();
-            details.put("ping", pong);
-            details.put("connectionTest", "SUCCESS");
-            
-            return HealthCheckDto.ComponentHealth.builder()
-                    .status("UP")
-                    .details(details)
-                    .duration(duration)
-                    .build();
-        } catch (Exception e) {
-            long duration = System.currentTimeMillis() - startTime;
-            log.error("Redis健康检查失败", e);
-            
-            Map<String, Object> details = new HashMap<>();
-            details.put("connectionTest", "FAILED");
-            
-            return HealthCheckDto.ComponentHealth.builder()
-                    .status("DOWN")
-                    .details(details)
-                    .error(e.getMessage())
-                    .duration(duration)
-                    .build();
-        }
-    }
+//    private HealthCheckDto.ComponentHealth checkRedis() {
+//        long startTime = System.currentTimeMillis();
+//        try {
+//            // 执行ping测试Redis连接
+//            String pong = redisTemplate.getConnectionFactory().getConnection().ping();
+//            long duration = System.currentTimeMillis() - startTime;
+//
+//            Map<String, Object> details = new HashMap<>();
+//            details.put("ping", pong);
+//            details.put("connectionTest", "SUCCESS");
+//
+//            return HealthCheckDto.ComponentHealth.builder()
+//                    .status("UP")
+//                    .details(details)
+//                    .duration(duration)
+//                    .build();
+//        } catch (Exception e) {
+//            long duration = System.currentTimeMillis() - startTime;
+//            log.error("Redis健康检查失败", e);
+//
+//            Map<String, Object> details = new HashMap<>();
+//            details.put("connectionTest", "FAILED");
+//
+//            return HealthCheckDto.ComponentHealth.builder()
+//                    .status("DOWN")
+//                    .details(details)
+//                    .error(e.getMessage())
+//                    .duration(duration)
+//                    .build();
+//        }
+//    }
 
-    /**
-     * 检查Token黑名单服务
-     */
-    private HealthCheckDto.ComponentHealth checkTokenBlacklist() {
-        long startTime = System.currentTimeMillis();
-        try {
-            // 检查黑名单服务状态
-            long blacklistSize = tokenBlacklistService.getBlacklistSize();
-            long duration = System.currentTimeMillis() - startTime;
-            
-            Map<String, Object> details = new HashMap<>();
-            details.put("blacklistSize", blacklistSize);
-            details.put("serviceTest", "SUCCESS");
-            
-            return HealthCheckDto.ComponentHealth.builder()
-                    .status("UP")
-                    .details(details)
-                    .duration(duration)
-                    .build();
-        } catch (Exception e) {
-            long duration = System.currentTimeMillis() - startTime;
-            log.error("Token黑名单服务健康检查失败", e);
-            
-            Map<String, Object> details = new HashMap<>();
-            details.put("serviceTest", "FAILED");
-            
-            return HealthCheckDto.ComponentHealth.builder()
-                    .status("DOWN")
-                    .details(details)
-                    .error(e.getMessage())
-                    .duration(duration)
-                    .build();
-        }
-    }
 }

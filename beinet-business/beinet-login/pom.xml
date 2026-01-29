@@ -28,10 +28,10 @@
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
         </dependency>
-        <dependency>
-            <groupId>cn.beinet</groupId>
-            <artifactId>beinet-redis</artifactId>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>cn.beinet</groupId>-->
+<!--            <artifactId>beinet-redis</artifactId>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>

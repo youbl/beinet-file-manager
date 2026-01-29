@@ -4,7 +4,6 @@ import cn.beinet.business.login.dal.UsersMapper;
 import cn.beinet.business.login.dal.entity.Users;
 import cn.beinet.business.login.service.AuditLogService;
 import cn.beinet.business.login.service.LoginService;
-import cn.beinet.business.login.service.TokenBlacklistService;
 import cn.beinet.core.base.commonDto.ResponseData;
 import cn.beinet.core.base.consts.ContextConst;
 import cn.beinet.core.utils.TokenHelper;
@@ -31,7 +30,6 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 @Tag(name = "登录认证", description = "用户登录认证相关接口")
 public class LoginController implements LoginSdk {
     private final LoginService loginService;
-    private final TokenBlacklistService tokenBlacklistService;
     private final AuditLogService auditLogService;
     private final UsersMapper usersMapper;
 
@@ -105,9 +103,6 @@ public class LoginController implements LoginSdk {
                     .eq("delflag", 0)
             );
 
-            // 将Token加入黑名单
-            tokenBlacklistService.addToBlacklist(token);
-
             // 清除Cookie
             ContextUtils.addCookie(ContextConst.LOGIN_COOKIE_NAME, "", 0);
 
@@ -138,11 +133,6 @@ public class LoginController implements LoginSdk {
             String token = getTokenFromRequest(request);
             if (!StringUtils.hasText(token)) {
                 return ResponseData.fail(1003, "Token不存在");
-            }
-
-            // 检查Token是否在黑名单中
-            if (tokenBlacklistService.isBlacklisted(token)) {
-                return ResponseData.fail(1008, "Token已失效，请重新登录");
             }
 
             // 验证Token并获取用户信息

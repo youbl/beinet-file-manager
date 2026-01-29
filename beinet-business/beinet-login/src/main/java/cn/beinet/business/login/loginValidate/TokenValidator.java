@@ -1,6 +1,5 @@
 package cn.beinet.business.login.loginValidate;
 
-import cn.beinet.business.login.service.TokenBlacklistService;
 import cn.beinet.core.base.consts.ContextConst;
 import cn.beinet.core.base.exceptions.BaseException;
 import cn.beinet.core.utils.TokenHelper;
@@ -24,8 +23,7 @@ import org.springframework.util.StringUtils;
 @Slf4j
 @RequiredArgsConstructor
 public class TokenValidator implements Validator {
-    private final TokenBlacklistService tokenBlacklistService;
-    
+
     @Value("${login.secret:beinet.cn.file}")
     private String secret;
 
@@ -62,12 +60,6 @@ public class TokenValidator implements Validator {
         // 检查Token是否为空
         if (!StringUtils.hasText(token)) {
             log.debug("Token为空: url={}", request.getRequestURI());
-            return Result.fail();
-        }
-        
-        // 检查Token是否在黑名单中
-        if (tokenBlacklistService.isBlacklisted(token)) {
-            log.debug("Token在黑名单中: url={}", request.getRequestURI());
             return Result.fail();
         }
         
