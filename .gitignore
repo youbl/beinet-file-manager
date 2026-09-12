@@ -31,3 +31,5 @@ build/
 
 ### VS Code ###
 .vscode/
+/beinet-deployment/beinet-dp-admin/src/main/resources/application-dev.yml
+/beinet-deployment/beinet-dp-admin/src/main/resources/application-prod.yml
