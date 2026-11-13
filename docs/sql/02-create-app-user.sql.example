@@ -1,0 +1,7 @@
+-- Execute as DBA AFTER 01-init-database.sql. Replace password before executing.
+-- This example is for MySQL and application on the same host only.
+-- Use the actual application source host for a remote DB; do not use '%'.
+CREATE USER 'beinet_app'@'localhost' IDENTIFIED BY 'REPLACE_WITH_A_LONG_RANDOM_PASSWORD';
+GRANT SELECT, INSERT, UPDATE, DELETE ON beinet_file_manager.* TO 'beinet_app'@'localhost';
+SHOW GRANTS FOR 'beinet_app'@'localhost';
+-- Runtime account deliberately has no CREATE/ALTER/DROP/FILE/GRANT privileges.

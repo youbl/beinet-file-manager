@@ -1,61 +1,28 @@
-# 数据库迁移说明
+# 数据库迁移
 
-## 迁移脚本执行顺序
+脚本手动执行，项目没有集成 Flyway。先备份，在目标 MySQL 版本的隔离副本演练；正式迁移期间停止应用写入。
 
-1. **V001__extend_users_table_for_github_oauth.sql** - 扩展用户表支持 GitHub OAuth
-2. **V002__create_audit_logs_table.sql** - 创建审计日志表
+## 空数据库
 
-## 手动执行方式
+依次执行：
 
-如果使用 Flyway 或类似工具，脚本会自动执行。如果需要手动执行：
+1. ../bootstrap.sql
+2. V001__extend_users_table_for_github_oauth.sql
+3. V002__create_audit_logs_table.sql
+4. V003__oauth_identities.sql
 
-```sql
--- 1. 连接到数据库
-USE eb-dev;
+bootstrap.sql 仅用于空库，不要对已有库执行。
 
--- 2. 执行用户表扩展脚本
-SOURCE V001__extend_users_table_for_github_oauth.sql;
+## 已有数据库
 
--- 3. 执行审计日志表创建脚本
-SOURCE V002__create_audit_logs_table.sql;
+已执行 V001/V002 的环境只执行 V003。更老的环境先核对列和索引，执行尚未应用的脚本。所有脚本均不是可随意重跑的幂等脚本。
 
--- 4. 验证表结构
-DESCRIBE users;
-DESCRIBE audit_logs;
+V003 创建 oauth_identities，并将 users.github_id 迁移为 github 身份，包含禁用/删除用户，避免重新登录绕过原账号状态。执行前确认 users.id 为兼容的 BIGINT 类型，表使用 InnoDB，github_id 无重复；特殊旧表结构需要先适配外键类型。
 
--- 5. 检查索引
-SHOW INDEX FROM users;
-SHOW INDEX FROM audit_logs;
-```
+执行后检查身份表条数与迁移前非空 github_id 记录数一致、无孤立 user_id，并验证禁用用户仍不能登录。Google 新用户会在首次通过白名单验证后创建独立身份，不自动按邮箱合并旧记录。
 
-## 回滚方式
+## 回滚
 
-如果需要回滚更改：
+恢复迁移前的数据库备份和匹配的应用版本；不要直接删表再继续运行新代码。oauth_identities 保存 Google 和新建第三方身份映射，删除它会丢失关联。备份方案需要包含 users、oauth_identities 和 audit_logs 的一致快照。
 
-```sql
--- 回滚审计日志表
-DROP TABLE IF EXISTS audit_logs;
-
--- 回滚用户表扩展
-ALTER TABLE users DROP COLUMN IF EXISTS github_id;
-ALTER TABLE users DROP COLUMN IF EXISTS github_login;
-ALTER TABLE users DROP COLUMN IF EXISTS github_avatar_url;
-ALTER TABLE users DROP COLUMN IF EXISTS github_node_id;
-ALTER TABLE users DROP COLUMN IF EXISTS login_type;
-ALTER TABLE users DROP COLUMN IF EXISTS last_login_ip;
-ALTER TABLE users DROP COLUMN IF EXISTS login_count;
-
--- 删除索引
-DROP INDEX IF EXISTS idx_users_github_id ON users;
-DROP INDEX IF EXISTS idx_users_github_login ON users;
-DROP INDEX IF EXISTS idx_users_login_type ON users;
-DROP INDEX IF EXISTS idx_users_last_login ON users;
-DROP INDEX IF EXISTS idx_users_status_type ON users;
-```
-
-## 注意事项
-
-1. 执行前请备份数据库
-2. 在生产环境执行前，请先在测试环境验证
-3. 确保应用程序停止后再执行迁移
-4. 执行后验证数据完整性
+本地测试使用 H2 MySQL 模式执行完整脚本并测试身份操作；这不能代替真实 MySQL 迁移验证。

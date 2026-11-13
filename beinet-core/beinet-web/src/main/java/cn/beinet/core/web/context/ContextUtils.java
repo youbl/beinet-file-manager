@@ -39,11 +39,14 @@ public class ContextUtils {
     public static final String DEFAULT_PRODUCT = "beinet";
 
     /**
-     * 从header里获取当前登录用户的用户id（前端写入）
+     * 获取认证过滤器写入的用户 ID，不信任客户端身份请求头。
      * @return 用户id
      */
     public static Long getUserId() {
-        return getLongHeader(HEADER_USER_ID);
+        HttpServletRequest request = getRequest();
+        // 仅读取 AuthorizationFilter 写入的后端属性，不接受客户端伪造的用户 ID Header。
+        Object value = request == null ? null : request.getAttribute(HEADER_USER_ID);
+        return value == null ? null : Long.valueOf(value.toString());
     }
 
     /**

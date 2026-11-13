@@ -122,6 +122,8 @@
                     v-if="!isReadonly"
                     class="upload-demo"
                     :action="$$BASE_URL + 'stores/uploadFile?dir=' + encodeURIComponent(dir)"
+                    :headers="beinetCsrfHeaders()"
+                    :on-error="handleUploadError"
                     :on-preview="handleUploadPreview"
                     :on-remove="handleUploadRemove"
                     :before-remove="beforeUploadRemove"
@@ -461,6 +463,16 @@
 
             handleUploadRemove(file, fileList) {
                 console.log(file, fileList);
+            },
+            beinetCsrfHeaders: function () {
+                return window.beinetCsrfHeaders();
+            },
+            handleUploadError: function (error) {
+                if (error.status === 401) {
+                    goLoginPage();
+                } else {
+                    vueAlert('上传失败，请刷新页面后重试。');
+                }
             },
             handleUploadPreview(file) {
                 console.log(file);

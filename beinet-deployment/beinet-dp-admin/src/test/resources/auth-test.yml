@@ -1,0 +1,16 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:beinet-auth;MODE=MySQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""
+    driver-class-name: org.h2.Driver
+  sql:
+    init:
+      mode: always
+      schema-locations:
+        - classpath:db/bootstrap.sql
+        - classpath:db/migration/V001__extend_users_table_for_github_oauth.sql
+        - classpath:db/migration/V002__create_audit_logs_table.sql
+        - classpath:db/migration/V003__oauth_identities.sql
+  main:
+    banner-mode: "off"

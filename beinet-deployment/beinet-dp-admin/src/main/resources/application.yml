@@ -1,5 +1,13 @@
 server:
   port: 8080
+  servlet:
+    session:
+      timeout: 8h
+      tracking-modes: cookie
+      cookie:
+        http-only: true
+        same-site: lax
+        secure: ${AUTH_COOKIE_SECURE:true}
 spring:
   application:
     name: beinet-admin
@@ -15,7 +23,7 @@ spring:
       max-request-size: 10GB  # 整个请求体最大限制
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://10.100.72.155:8306/eb-dev?serverTimezone=UTC&allowMultiQueries=true&useUnicode=true&characterEncoding=utf8&socketTimeout=3000&connectTimeout=3000&useSSL=false&rewriteBatchedStatements=true&allowPublicKeyRetrieval=true&zeroDateTimeBehavior=round
+    url: jdbc:mysql://10.100.72.155:8306/beinet_file_manager?serverTimezone=UTC&allowMultiQueries=true&useUnicode=true&characterEncoding=utf8&socketTimeout=3000&connectTimeout=3000&useSSL=false&rewriteBatchedStatements=true&allowPublicKeyRetrieval=true&zeroDateTimeBehavior=round
     username: root
     password: ENC(eP7nQwcd/E2fjjk8oOG3hyH+4En0uAdF+o1FeDtPe/8BgEK/JfDevg6mgMn6MfWc)
   data:
@@ -32,28 +40,20 @@ sdk:
   api:
     - /version
 
-# GitHub OAuth 配置
-github:
-  oauth:
+# Exact, verified email addresses only. Empty lists deny access; no wildcard/domain matching.
+auth:
+  cors:
+    # 可信前端来源，精确填写协议、主机和端口；空列表不开放外部跨域。
+    allowed-origins: []
+  base-url: ${AUTH_BASE_URL:http://localhost:8080}
+  allowed-emails: []
+  admin-emails: []
+  google:
+    client-id: ${GOOGLE_CLIENT_ID:}
+    client-secret: ${GOOGLE_CLIENT_SECRET:}
+  github:
     client-id: ${GITHUB_CLIENT_ID:}
     client-secret: ${GITHUB_CLIENT_SECRET:}
-    redirect-uri: ${GITHUB_REDIRECT_URI:http://localhost:8080/login/github/callback}
-
-# 认证配置
-auth:
-  whitelist:
-    enabled: true
-    paths:
-      - /login/**
-      - /swagger-ui/**
-      - /v3/api-docs/**
-      - /static/**
-      - /favicon.ico
-      - /error
-      - /actuator/health
-  jwt:
-    expire-seconds: 86400  # 24小时
-    secret: ${login.secret:beinet.cn.file}
 
 jasypt:
   encryptor:

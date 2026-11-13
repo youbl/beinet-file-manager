@@ -1,0 +1,26 @@
+[Unit]
+Description=Beinet File Manager
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=beinet
+Group=beinet
+WorkingDirectory=/opt/beinet
+EnvironmentFile=/etc/beinet/beinet.env
+ExecStart=/usr/bin/java -Xms256m -Xmx1g -Djava.io.tmpdir=/var/lib/beinet/tmp -jar /opt/beinet/app.jar --spring.profiles.active=deploy --spring.config.location=file:/etc/beinet/application-deploy.yml
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=60
+UMask=0027
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/srv/beinet/uploads /var/lib/beinet/tmp
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

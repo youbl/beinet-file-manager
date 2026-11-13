@@ -854,6 +854,10 @@ function ajaxSuccessCheck(response) {
  * @param error 错误对象
  */
 function ajaxError(error) {
+    if (error.response && error.response.status === 401) {
+        goLoginPage();
+        return;
+    }
     let vueApp = getVueInstance();
     // 外部业务，使用了loading作为ajax加载防重复逻辑
     if (vueApp && vueApp.loading)
@@ -888,9 +892,45 @@ function getErrorMsg(response) {
     return msg ? msg : '';
 }
 
+// 保留当前页面作为回跳候选，服务端仍会校验，前端地址不能直接决定最终跳转。
 function goLoginPage() {
-    top.location.href = $$BASE_URL + 'login.html?url=' + encodeURIComponent(location.href);
+    top.location.href = $$BASE_URL + 'login.html?returnTo=' + encodeURIComponent(location.pathname + location.search);
 }
+
+// Element UI 上传直接使用 XMLHttpRequest，不经过 Axios，需显式附带 CSRF 请求头。
+function beinetCsrfHeaders() {
+    const entry = document.cookie.split('; ').find(item => item.startsWith('XSRF-TOKEN='));
+    return entry ? { 'X-XSRF-TOKEN': decodeURIComponent(entry.substring('XSRF-TOKEN='.length)) } : {};
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    if (!window.axios || location.pathname === '/login.html') return;
+    // 仅 401 表示需要重新登录；403 保留权限/CSRF 错误，避免反复跳转登录页。
+    axios.interceptors.response.use(response => response, error => {
+        if (error.response && error.response.status === 401) goLoginPage();
+        return Promise.reject(error);
+    });
+    axios.get('/auth/session').then(response => {
+        const user = response.data.data;
+        const bar = document.createElement('aside');
+        bar.style.cssText = 'padding:10px 20px;text-align:right;background:#fff;border-bottom:1px solid #ddd;font:14px system-ui';
+        const label = document.createElement('span');
+        // 用 textContent 展示身份文本，不将邮箱作为 HTML 插入页面。
+        label.textContent = user.email + (user.admin ? ' · 管理员 ' : ' ');
+        const logout = document.createElement('button');
+        logout.textContent = '退出登录';
+        logout.style.marginLeft = '12px';
+        logout.onclick = function () {
+            logout.disabled = true;
+            // 退出必须使用带 CSRF 的 POST，由服务端销毁会话，不能只清理前端状态。
+            axios.post('/auth/logout', null, { headers: beinetCsrfHeaders() }).then(() => {
+                location.assign('/login.html');
+            }).catch(error => { logout.disabled = false; ajaxError(error); });
+        };
+        bar.append(label, logout);
+        document.body.prepend(bar);
+    }).catch(ajaxError);
+});
 
 var globalPickOptions = {
     shortcuts: [

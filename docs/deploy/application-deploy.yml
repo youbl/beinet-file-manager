@@ -1,0 +1,56 @@
+# Load with --spring.config.location=file:/etc/beinet/application-deploy.yml
+# This file REPLACES packaged application.yml; replace sample emails before use.
+server:
+  address: 127.0.0.1
+  port: 8080
+  forward-headers-strategy: framework
+  servlet:
+    session:
+      timeout: 8h
+      tracking-modes: cookie
+      cookie:
+        http-only: true
+        secure: true
+        same-site: lax
+spring:
+  application:
+    name: beinet-admin
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # Loopback database only. For remote DB use VERIFY_IDENTITY and trusted CA.
+    url: jdbc:mysql://127.0.0.1:3306/beinet_file_manager?serverTimezone=UTC&characterEncoding=UTF-8&sslMode=DISABLED&allowPublicKeyRetrieval=true&connectTimeout=5000&socketTimeout=10000
+    username: beinet_app
+    password: ${BEINET_DB_PASSWORD}
+  sql:
+    init:
+      mode: never
+  servlet:
+    multipart:
+      location: /var/lib/beinet/tmp
+      max-file-size: 1GB
+      max-request-size: 1100MB
+beinet:
+  config:
+    path: /etc/beinet/config.ini
+auth:
+  cors:
+    # 精确填写可信前端来源，例如 https://app.example.com；不支持 * 或路径。
+    allowed-origins: []
+  base-url: https://files.example.com
+  allowed-emails:
+    - owner@example.com
+    - colleague@example.com
+  # Admin emails automatically have login access; no duplicate allowed-emails entry needed.
+  admin-emails:
+    - owner@example.com
+  google:
+    client-id: ${GOOGLE_CLIENT_ID:}
+    client-secret: ${GOOGLE_CLIENT_SECRET:}
+  github:
+    client-id: ${GITHUB_CLIENT_ID:}
+    client-secret: ${GITHUB_CLIENT_SECRET:}
+# No ENC values are inherited with spring.config.location. Set a private key
+# if you later introduce encrypted properties; never use the repository key.
+jasypt:
+  encryptor:
+    password: ${BEINET_JASYPT_PASSWORD}

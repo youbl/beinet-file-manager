@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>登录 · Beinet File Manager</title>
+    <script src="/res/vue.min.js"></script>
+    <script src="/res/axios.min.js"></script>
+    <style>
+        body { margin: 0; background: #f1f5f9; color: #172033; font-family: system-ui, sans-serif; }
+        main { box-sizing: border-box; max-width: 420px; margin: 12vh auto; padding: 36px; background: white;
+            border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 12px 40px #1720330c; }
+        h1 { font-size: 24px; } p { color: #64748b; line-height: 1.7; }
+        button { width: 100%; padding: 13px; margin: 8px 0; background: #172033; color: white;
+            border: 0; border-radius: 8px; font-size: 16px; cursor: pointer; }
+        button:disabled { opacity: .55; cursor: wait; } .error { color: #b91c1c; }
+        [v-cloak] { display: none; }
+        @media(max-width: 460px) { main { margin: 8vh 16px; padding: 24px; } }
+    </style>
+</head>
+<body>
+<main id="login" v-cloak>
+    <h1>Beinet File Manager</h1>
+    <p>使用获准的邮箱登录后访问文件。</p>
+    <p v-if="error" class="error" role="alert">{{ error }}</p>
+    <p v-if="reference">排查编号：{{ reference }}</p>
+    <p v-if="loading">正在加载登录方式…</p>
+    <button v-for="provider in providers" :key="provider" :disabled="busy" @click="login(provider)">
+        使用 {{ provider === 'google' ? 'Google' : 'GitHub' }} 登录
+    </button>
+    <p v-if="!loading && !providers.length && !error">尚未配置登录方式，请联系管理员。</p>
+</main>
+<script>
+    new Vue({
+        el: '#login',
+        data: { providers: [], loading: true, busy: false, error: '', reference: '' },
+        mounted: function () {
+            if (new URLSearchParams(location.search).has('error')) {
+                var query = new URLSearchParams(location.search);
+                // 页面仅根据受控错误码显示建议，完整身份上下文和异常链保留在服务端日志。
+                var reasons = {
+                    provider_not_configured: '此登录方式未配置，请检查对应的 auth.google 或 auth.github 客户端凭据。',
+                    authorization_request_not_found: '登录会话不存在、已过期或已被消费。请从本站重新发起登录；检查访问地址与 auth.base-url 的域名和端口一致，本机 HTTP 的 session.cookie.secure 必须为 false。',
+                    invalid_state_parameter: '登录状态校验失败。请勿重复点击或混用 localhost 与 127.0.0.1，重新发起登录。',
+                    access_denied: '供应商拒绝授权或用户取消了授权。请检查 OAuth 应用测试用户及授权设置。',
+                    invalid_token_response: '后端换取令牌失败。检查供应商凭据、登记回调地址，以及服务器到供应商的网络连接。',
+                    invalid_client: '供应商不接受客户端凭据。检查 Client ID 和 Client Secret 是否属于同一个 OAuth 应用。',
+                    invalid_grant: '授权码无效或已过期。检查回调地址后重新登录。',
+                    invalid_user_info_response: '读取供应商用户资料失败。检查网络连接和授权范围。',
+                    invalid_id_token: 'Google 身份令牌校验失败。检查服务器时间、客户端配置及签名服务网络连接。',
+                    invalid_nonce: 'Google 登录 nonce 校验失败，请重新发起登录。',
+                    email_not_verified: '供应商未验证此邮箱，请先完成邮箱验证。',
+                    email_not_allowed: '此邮箱不在 allowed-emails 或 admin-emails 中，请检查配置并重启应用。',
+                    verified_email_not_allowed: 'GitHub 未返回获准的已验证邮箱。检查 GitHub 邮箱验证、user:email 授权范围及邮箱名单。',
+                    github_email_fetch_failed: '读取 GitHub 邮箱接口失败。检查后端访问 api.github.com 的网络及 user:email 授权范围。',
+                    account_disabled: '本地账号已禁用或删除，请联系管理员。',
+                    account_storage_failed: '读取或保存本地账号失败。请按排查编号检查服务端数据库异常、表结构和账户权限。',
+                    login_denied: '身份信息不完整或不符合登录要求，请按排查编号检查服务端日志。'
+                };
+                var reason = query.get('reason');
+                this.error = (reasons[reason] || '登录失败，请重新发起登录，并按排查编号查看服务端日志。')
+                    + ' 错误类型：' + (Object.prototype.hasOwnProperty.call(reasons, reason) ? reason : 'unexpected_login_error');
+                var reference = query.get('reference') || '';
+                this.reference = /^[0-9a-f-]{36}$/.test(reference) ? reference : '';
+                // 读取诊断参数后清理地址栏，避免刷新时重复消费旧错误提示。
+                history.replaceState(null, '', location.pathname);
+            }
+            // 按服务端实际注册的供应商生成按钮，不在浏览器保存 Client Secret 或 Token。
+            axios.get('/auth/providers').then(function (response) {
+                this.providers = response.data.data || [];
+            }.bind(this)).catch(function () {
+                this.error = '无法加载登录方式，请稍后重试。';
+            }.bind(this)).finally(function () { this.loading = false; }.bind(this));
+        },
+        methods: {
+            login: function (provider) {
+                this.busy = true;
+                var target = new URLSearchParams(location.search).get('returnTo') || '/stores/store.html';
+                location.assign('/oauth2/authorization/' + provider + '?returnTo=' + encodeURIComponent(target));
+            }
+        }
+    });
+</script>
+</body>
+</html>

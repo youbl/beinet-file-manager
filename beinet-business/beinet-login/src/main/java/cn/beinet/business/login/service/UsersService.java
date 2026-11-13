@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.io.Serializable;
 
 /**
  *
@@ -22,6 +23,8 @@ public class UsersService extends ServiceImpl<UsersMapper, Users> {
 
     public List<UsersDto> search(UsersDto dto) {
         LambdaQueryWrapper<Users> wrapper = new LambdaQueryWrapper<>();
+        // 未指定删除标记时默认隐藏软删除账号，显式查询条件仍可供管理场景使用。
+        wrapper.eq(dto == null || dto.getDelflag() == null, Users::getDelflag, 0);
         if (dto != null) {
             wrapper.eq(dto.getId() != null, Users::getId, dto.getId());
             wrapper.eq(StringUtils.hasLength(dto.getName()), Users::getName, dto.getName());
@@ -56,6 +59,14 @@ public class UsersService extends ServiceImpl<UsersMapper, Users> {
     // find by primary key
     public UsersDto findById(Long id) {
         return entityMapper.entity2dto(getById(id));
+    }
+
+    // insert or update data
+    // 软删除并禁用账号，但保留第三方身份关联，防止同一身份重新注册绕过删除限制。
+    @Override
+    public boolean removeById(Serializable id) {
+        return lambdaUpdate().eq(Users::getId, id)
+                .set(Users::getDelflag, 1).set(Users::getStatus, 0).update();
     }
 
     // insert or update data

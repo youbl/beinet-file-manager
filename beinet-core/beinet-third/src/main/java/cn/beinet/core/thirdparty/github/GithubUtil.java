@@ -18,9 +18,10 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class GithubUtil {
 
-    @Value("${github.client-id:}")
+    // 辅助客户端与新 OAuth 登录共用 auth.github 配置，不再读取顶层 github.*。
+    @Value("${auth.github.client-id:}")
     private String githubClientId;
-    @Value("${github.client-secret:}")
+    @Value("${auth.github.client-secret:}")
     private String githubClientSecret;
 
     private final GithubTokenFeign githubTokenFeign;
