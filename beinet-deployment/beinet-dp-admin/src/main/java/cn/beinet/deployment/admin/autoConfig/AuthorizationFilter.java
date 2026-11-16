@@ -4,6 +4,7 @@ import cn.beinet.business.login.loginValidate.Validator;
 import cn.beinet.core.base.commonDto.ResponseData;
 import cn.beinet.core.base.configs.ConfigConst;
 import cn.beinet.core.base.consts.ContextConst;
+import cn.beinet.core.base.exceptions.BaseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -11,6 +12,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
@@ -18,6 +20,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -42,29 +45,36 @@ public class AuthorizationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         // 允许跨域的请求头添加
         addCorsHeaders(request, response);
+
         // OPTIONS请求直接返回
         if (HttpMethod.OPTIONS.matches(request.getMethod())) {
             response.setStatus(HttpServletResponse.SC_OK);
             return;
         }
 
-        // 逐一调用验证器，比如不需要登录的页面、比如SDK登录等等
-        for (Validator item : validatorList) {
-            var result = item.validated(request, response);
-            if (result.isPassed()) {
-                String account = result.getAccount();
+        try {
+            // 逐一调用验证器，比如不需要登录的页面、比如SDK登录等等
+            for (Validator item : validatorList) {
+                var result = item.validated(request, response);
+                if (result.isPassed()) {
+                    String account = result.getAccount();
 
-                // 添加登录后的信息
-                request.setAttribute(ContextConst.LOGIN_COOKIE_NAME, account);
+                    // 添加登录后的信息
+                    request.setAttribute(ContextConst.LOGIN_COOKIE_NAME, account);
 
-                // 记录访问成功（仅对需要认证的请求）
-//                if (!ContextConst.ANONYMOUS.equals(account)) {
-//                    auditLogService.recordAccessSuccess(account, request);
-//                }
+                    if (result.getUserId() != null) {
+                        request.setAttribute(ContextConst.LOGIN_USER_ID, result.getUserId());
+                        MDC.put(ContextConst.LOGIN_USER_ID, result.getUserId().toString());
+                    }
 
-                filterChain.doFilter(request, response);
-                return;
+                    filterChain.doFilter(request, response);
+                    return;
+                }
             }
+        } catch (BaseException e) {
+            int code = e.getCode() > 0 ? e.getCode() : 403;
+            endResponse(request, response, code, e.getMsg() != null ? e.getMsg() : e.getMessage());
+            return;
         }
 
         if (ConfigConst.isDev()) {
@@ -77,11 +87,8 @@ public class AuthorizationFilter extends OncePerRequestFilter {
         // 记录认证失败
         // auditLogService.recordAuthenticationFailed(request, "Token验证失败或不存在");
 
-        // 临时允许所有请求通过
-        filterChain.doFilter(request, response);
-
         // @ExceptionHandler(Exception.class) 不会拦截Filter里的异常，要自己返回
-        // endResponse(request, response, 401, "请重新登录: " + request.getRequestURI());
+        endResponse(request, response, 401, "请重新登录: " + request.getRequestURI());
         //throw new BaseException(401, "请重新登录: " + request.getRequestURI());
     }
 
@@ -115,16 +122,52 @@ public class AuthorizationFilter extends OncePerRequestFilter {
      * @param msg      错误信息
      */
     public void endResponse(HttpServletRequest request, HttpServletResponse response, int code, String msg) {
-//        String redirectUrl = thirdLoginService.combineLoginUrl(request);
-//        if (!isAjax(request)) {
-//            redirect(response, redirectUrl);
-//        } else {
+        if (shouldRedirectToLoginPage(request)) {
+            redirectToLoginPage(request, response);
+            return;
+        }
         writeJson(response, code, msg, null);
-//        }
+    }
+
+    /**
+     * 浏览器地址栏/链接触发的文档 GET 请求未登录时跳转登录页；接口与 Ajax 仍返回 JSON。
+     */
+    private static boolean shouldRedirectToLoginPage(HttpServletRequest request) {
+        if (!HttpMethod.GET.matches(request.getMethod())) {
+            return false;
+        }
+        String xrw = request.getHeader("X-Requested-With");
+        if (StringUtils.hasText(xrw) && "XMLHttpRequest".equalsIgnoreCase(xrw.trim())) {
+            return false;
+        }
+        String dest = request.getHeader("Sec-Fetch-Dest");
+        if (StringUtils.hasText(dest) && "document".equalsIgnoreCase(dest.trim())) {
+            return true;
+        }
+        String accept = request.getHeader(HttpHeaders.ACCEPT);
+        return accept != null && accept.toLowerCase().contains("text/html");
+    }
+
+    private static void redirectToLoginPage(HttpServletRequest request, HttpServletResponse response) {
+        String ctx = request.getContextPath();
+        String returnUrl = buildAbsoluteRequestUrl(request);
+        String target = ctx + "/login.html?url=" + URLEncoder.encode(returnUrl, StandardCharsets.UTF_8);
+        response.setStatus(HttpServletResponse.SC_FOUND);
+        response.setHeader(HttpHeaders.LOCATION, response.encodeRedirectURL(target));
+    }
+
+    private static String buildAbsoluteRequestUrl(HttpServletRequest request) {
+        StringBuffer url = request.getRequestURL();
+        String query = request.getQueryString();
+        if (StringUtils.hasText(query)) {
+            url.append('?').append(query);
+        }
+        return url.toString();
     }
 
     private void writeJson(HttpServletResponse response, int code, String msg, Object obj) {
         try {
+            response.setStatus(HttpServletResponse.SC_OK);
             var data = ResponseData.fail(code, msg, obj);
             String json = objectMapper.writeValueAsString(data);
             response.setContentType("application/json; charset=UTF-8");

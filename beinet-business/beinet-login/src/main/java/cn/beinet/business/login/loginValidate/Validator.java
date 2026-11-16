@@ -36,6 +36,11 @@ public interface Validator extends Ordered {
          */
         private String account;
 
+        /**
+         * 用户唯一id
+         */
+        private Long userId;
+
         public static Result fail() {
             return new Result().setPassed(false).setAccount(ContextConst.ANONYMOUS);
         }
