@@ -42,8 +42,9 @@ public class CookieValidator implements Validator {
 
         // 判断有没有cookie，有cookie时是否有效
         String token = ContextUtils.getCookie(cookName);
+        log.debug("url:{} token: {}", request.getRequestURI(),
+                token != null && token.length() > 5 ? token.substring(0, 5) + "***" : token);
 
-        log.debug("url:{} token: {}", request.getRequestURI(), token);
         // 验证授权有效性, 并获取账号
         String account = TokenHelper.getAccountFromJwt(token, secret);
         // 验证token

@@ -48,5 +48,9 @@ public interface Validator extends Ordered {
         public static Result ok(String account) {
             return new Result().setPassed(true).setAccount(account);
         }
+
+        public static Result ok(String account, Long userId) {
+            return new Result().setPassed(true).setAccount(account).setUserId(userId);
+        }
     }
 }
